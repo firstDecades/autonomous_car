@@ -1,0 +1,236 @@
+/*
+ * macros.h
+ *
+ *  Created on: Jan 30, 2025
+ *      Author: chait
+ */
+
+#ifndef INCLUDE_MACROS_H_
+#define INCLUDE_MACROS_H_
+
+//main.c defines
+#define ALWAYS                  (1)
+#define RESET_STATE             (0)
+#define RED_LED              (0x01) // RED LED 0
+#define GRN_LED              (0x40) // GREEN LED 1
+#define TEST_PROBE           (0x01) // 0 TEST PROBE
+#define TRUE                 (0x01) //
+
+// STATES ======================================================================
+#define NONE ('N')
+//#define STRAIGHT ('L')
+#define SWITCH_1 ('L')
+//#define CIRCLE ('C')
+#define SWITCH_2 ('C')
+#define WAIT ('W')
+#define START ('S')
+#define RUN ('R')
+#define END ('E')
+#define ON ('N')
+#define OFF ('F')
+#define WHEEL_COUNT_TIME (100)
+#define RIGHT_COUNT_TIME (100)
+#define LEFT_COUNT_TIME (100)
+#define TRAVEL_DISTANCE (2)
+#define WAITING2START (300)
+#define DEFINED_PERIOD (50)
+#define TOO_FAST (30)
+#define GO_LEFT ('L')
+#define GO_RIGHT ('R')
+#define GO_STRAIGHT ('S')
+#define GO_BACK ('B')
+#define NOT_INTERCEPTED ('N')
+#define INTERCEPTED ('I')
+#define RUN_STRAIGHT ('T')
+#define RUN_RIGHT ('G')
+#define RUN_LEFT ('L')
+#define RUN_BACK ('B')
+#define INTERCEPT ('I')
+#define TURN ('U')
+#define MOVE_OUT ('M')
+#define BLACK ('B')
+
+//clocks.c defines
+#define MCLK_FREQ_MHZ           (8) // MCLK = 8MHz
+#define CLEAR_REGISTER     (0X0000)
+
+//switches.c defines
+#define PRESSED         (0x01)        //switch pressed
+#define RELEASED        (0x00)        //switch released
+#define OKAY            (0x01)        //okay to look at switch
+#define NOT_OKAY        (0x00)        //not okay to look at switch
+#define DEBOUNCE_TIME   (100)         //EDITABLE debounce time
+#define DEBOUNCE_RESTART (0x00)       //set debounce to zero
+#define TRIANGLE        (0)
+#define FIGURE_8        (1)
+#define CIRCLE          (2)
+
+//ports.c defines
+#define P2PUD           (P2OUT)
+#define P4PUD           (P4OUT)
+
+//interrupt defines
+#define TIMER_BO_0_VECTOR (TIMER0_B0_VECTOR)
+#define TIMER_B0_1_OVFL_VECTOR (TIMER0_B1_VECTOR)
+#define TB0CCR0_INTERVAL (2500) //8,000,000/8/8/[1/5ms]
+#define FIFTY_MS_COUNT (10)
+#define FOUR_FIFTY_MS_COUNT (4)
+#define TWO_HUNDRED_MS_COUNT (3)
+#define TWENTY_MS_COUNT (4)
+#define TB0CCR1_INTERVAL (125000) //1/1000 ms ==1/ 1 sec
+#define TB0CCR2_INTERVAL (125000) //1/1000 ms
+#define TB0CCR3_INTERVAL (125000) //1/1000 ms
+#define INTERRUPT_ON (1)
+#define INTERRUPT_OFF (0)
+#define DEBOUNCE_OFF ('F')
+#define DEBOUNCE_ON ('N')
+#define CLEAR ('C')
+#define ONE_SEC (3000)
+#define THUMB ('T')
+#define SENSOR ('S')
+
+#define TB1CCR0_INTERVAL (25000) //8,000,000/8/8 = 125,000, 125,000/5 = 25,000
+#define TB1CCR1_INTERVAL (125) //125000/(1/0.001) = 125000/1000 = 125
+#define TB1CCR2_INTERVAL (31250)     //125000/(1/0.5) = 125000/4 = 31250
+
+//timers b3 defines
+#define SLOW (35000)
+#define LEFT_SLOW (32000)
+#define LEFT_VERY_SLOW (30000)
+#define LEFT_FAST (45000)
+#define RIGHT_SLOW (35000)
+#define RIGHT_VERY_SLOW (32000)
+#define RIGHT_FAST (50000)
+#define FAST (50000)
+#define PERCENT_100 (50000)
+#define PERCENT_80 (45000)
+#define PWM_PERIOD (TB3CCR0)
+#define LCD_BACKLITE_DIMING (TB3CCR1)
+#define TB3CCR0_INTERVAL (25000) //1/50 ms
+
+#define TWO_HUNDRED (0x00C8)
+//#define LEFT_BLACK (0x00BA)
+//#define RIGHT_BLACK (0x00BA)
+extern unsigned int LEFT_BLACK;
+extern unsigned int RIGHT_BLACK;
+extern unsigned int LEFT_WHITE;
+extern unsigned int RIGHT_WHITE;
+extern unsigned int REFERENCE;
+
+//DAC defines
+#define DAC_Begin (2725)    //2 V
+//#define DAC_Limit (850)     //6.08 V
+//#define DAC_Adjust (875)    //6.00 V
+#define DAC_Limit (1900)
+#define DAC_Adjust (1925)
+//#define DAC_Limit (1800) //some value
+//#define DAC_Adjust (1825) //some other value
+//#define DAC_Limit (1500) // 4.02v
+//#define DAC_Adjust (1505) // 4.00v
+//#define DAC_Limit (1400) // 4.29v
+//#define DAC_Adjust (1405) // 4.32v
+//#define DAC_Limit (1300) // 4.66v
+//#define DAC_Adjust (1300) // 4.66v
+//#define DAC_Limit (1200) // 4.98v
+//#define DAC_Adjust (1190) // 5.00v
+//#define DAC_Limit (1000) // 5.61v
+//#define DAC_Adjust (1033) // 5.50v
+//#define DAC_Limit (715) // 6.5v
+//#define DAC_Adjust (712) // 6.5v
+extern volatile unsigned int DAC_data;
+
+//global variables
+extern char display_line[4][11];
+extern char *display[4];
+extern volatile unsigned char display_changed;
+extern volatile unsigned char update_display;
+extern volatile unsigned int update_display_count;
+extern volatile unsigned int Time_Sequence;
+extern volatile char one_time;
+
+extern unsigned int Last_Time_Sequence;     //A variable to identify Time_Sequence has changed
+extern unsigned int cycle_time;             //is a new time base used to control making shapes
+extern unsigned int time_change;            //is an identifier that a change has occurred
+extern volatile unsigned int Switch_State;           //identifies the state in switch state machine
+extern volatile unsigned int Shape_Count;
+extern volatile unsigned int ms200Time_Sequence;
+
+extern volatile unsigned int sw1_position;
+extern volatile unsigned int sw2_position;
+
+extern unsigned int Interrupt_On;
+extern volatile unsigned char debounce_check;
+extern volatile unsigned char debounce_switch;
+extern volatile unsigned int debounce_count;
+
+extern volatile unsigned int ADC_Channel;
+extern volatile unsigned int ADC_Left_Detect;
+extern volatile unsigned int ADC_Right_Detect;
+extern volatile unsigned int ADC_V_Thumb;
+
+extern volatile unsigned int ADC_Thumb_Shift;
+extern unsigned char ADC_Switch;
+
+extern volatile unsigned char IR_Status;
+
+extern volatile unsigned int ADC_Left_Shift;
+extern volatile unsigned int ADC_Right_Shift;
+
+extern unsigned int Baudrate;
+
+#define CARRIAGE_RETURN (0x0D)
+#define LINE_FEED (0x0A)
+#define NULL_CHAR (0x00)
+#define BEGINNING (0x00) //start of IOT_2_PC
+
+extern volatile unsigned char IOT_2_PC[50];
+extern volatile unsigned char PC_2_IOT[50];
+extern volatile unsigned int iot_rx_wr;
+extern volatile unsigned int iot_rx_rd;
+extern volatile unsigned int usb_rx_wr;
+extern volatile unsigned int usb_rx_rd;
+extern volatile unsigned int direct_iot;
+extern volatile unsigned int direct_usb;
+extern volatile unsigned int tx_index;
+extern volatile unsigned int tx_iot_index;
+extern unsigned char tx_iot[34];
+extern unsigned int IOT_tx_check;
+extern unsigned int USB_tx_check;
+extern unsigned int IOT_rx_check;
+extern unsigned int USB_rx_check;
+extern unsigned int rx_check;
+extern unsigned int tx_check;
+extern unsigned int USB_toggle;
+extern unsigned int IOT_toggle;
+
+extern unsigned int displayIP;
+extern unsigned int getIP_check;
+extern unsigned int collectIP;
+extern unsigned char ip_string[21];
+extern unsigned int ip_index;
+
+///commands.c
+#define MAX_ROWS (9)
+extern unsigned char Process_Buffer[MAX_ROWS][34];
+extern unsigned char Process_Buffer_USB[MAX_ROWS][34];
+extern unsigned char tx_buffer[34];
+extern unsigned char tx_iot[34];
+extern unsigned int buffer_row;
+extern unsigned int buffer_row_usb;
+extern unsigned char NCSU_tx[9];
+extern unsigned int ncsuLoop;
+#define MAX_TASKS (8)
+#define DELAY_TIME (1000) //Delay updates every ms, so 1 sec
+typedef struct {
+    //unsigned char name; //name of function for wheels
+    unsigned int period; //time for event
+    unsigned int delay; //time after event
+    unsigned int ready; //binary: 1 = run now
+    unsigned int enabled; // active task
+    unsigned char task;
+    //void (* task)(int num); //address of function
+} command_task;
+extern command_task task_list[MAX_TASKS];
+
+
+#endif /* INCLUDE_MACROS_H_ */

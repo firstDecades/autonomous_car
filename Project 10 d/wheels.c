@@ -1,0 +1,832 @@
+/*
+ * wheels.c
+ * description: will hold all functions related to wheel movement
+ *  Created on: Feb 10, 2025
+ *      Author: chait
+ */
+//includes
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+
+
+
+//global variables
+unsigned char state = 'W';
+unsigned int right_motor_count = 0;
+unsigned int left_motor_count = 0;
+unsigned int segment_count = 0;
+unsigned int delay_start = 0;
+//const unsigned int wheel_count = 18;
+unsigned char operation;
+unsigned int wheel_period = 0;
+unsigned int run_time = 0;
+unsigned char Turn_State = GO_BACK;
+unsigned char intercept = NOT_INTERCEPTED;
+int sum_error = 0;
+int previous_error = 0;
+
+void run_forward(unsigned int period) {
+    if (period > 0) {
+        RIGHT_FORWARD_SPEED = RIGHT_FAST;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW-1000;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        TB1CCTL2 &= ~CCIE;
+        P6OUT &= ~GRN_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+    }
+}
+void run_backward(unsigned int period) {
+    if (period > 0) {
+        RIGHT_REVERSE_SPEED = RIGHT_FAST;
+        LEFT_REVERSE_SPEED = LEFT_FAST;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        P6OUT &= ~GRN_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        TB1CCTL2 &= ~CCIE;
+    }
+}
+void run_left(unsigned int period) {
+    if (period > 0) {
+        RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        TB1CCTL2 &= ~CCIE;
+        P6OUT &= ~GRN_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+    }
+}
+void run_right(unsigned int period) {
+    if (period > 0) {
+        RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        TB1CCTL2 &= ~CCIE;
+        P6OUT &= ~GRN_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+    }
+}
+
+void arrived_1(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     1    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_2(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     2    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_3(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     3    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_4(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     4    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_5(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     5    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_6(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     6    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_7(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     7    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_8(unsigned int period) {
+    if (task_list[1].task == NULL_CHAR) {
+        task_list[0].period = 10;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "  arrived ");
+        strcpy(display_line[2], "     8    ");
+    }
+    else {
+        task_list[0].period = 0;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        lcd_4line();
+        TB1CCTL2 &= ~CCIE;
+    }
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+}
+void arrived_black(unsigned int period) {
+    if (period > 2) {
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "intercept ");
+        strcpy(display_line[2], "  black   ");
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        lcd_4line();
+        task_list[0].period = 0;
+        TB1CCTL2 &= ~CCIE;
+        P6OUT &= ~GRN_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+    }
+
+}
+
+void arrived_white(unsigned int period) {
+    if (period > 2) {
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "intercept ");
+        strcpy(display_line[2], "  white   ");
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        lcd_4line();
+        task_list[0].period = 0;
+        TB1CCTL2 &= ~CCIE;
+        P6OUT &= ~GRN_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+    }
+
+}
+void Black_Stop(unsigned int period) {
+    if (period > 2) {
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        lcd_BIG_mid();
+        strcpy(display_line[1], "BLACK_STOP");
+        strcpy(display_line[2], "          ");
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        lcd_4line();
+        task_list[0].period = 0;
+        TB1CCTL2 &= ~CCIE;
+        P6OUT &= ~GRN_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+    }
+
+}
+
+void Stop_All(unsigned int period) {
+    if (period > 0) {
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        P6OUT |= GRN_LED;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        Switch_State = NONE;
+        segment_count = 0;
+        P1OUT |= RED_LED;
+        lcd_BIG_mid();
+        strcpy(display_line[1], " stop ALL ");
+        strcpy(display_line[2], " stop ALL ");
+        TB1CCTL2 |= CCIE;
+    }
+    else {
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        TB1CCTL2 &= ~CCIE;
+        P6OUT &= ~GRN_LED;
+        P1OUT &= ~RED_LED;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+    }
+}
+
+
+void Black_Line_Follow(unsigned int period) {
+    if (period > 0) {
+        P6OUT |= GRN_LED;
+        TB1CCTL2 |= CCIE;
+    } else {
+        P6OUT &= ~GRN_LED;
+        TB1CCTL2 &= ~CCIE;
+    }
+    Switch_State = BLACK;
+}
+
+void LINE_CHECK(void) {
+    black_line_check();
+    //Wheel_Stop();
+    switch(Turn_State) {
+    case GO_BACK:
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        P1OUT |= RED_LED;
+        P6OUT |= GRN_LED;
+        break;
+    case GO_STRAIGHT:
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        P1OUT &= ~RED_LED;
+        P6OUT &= ~GRN_LED;
+        break;
+    case GO_RIGHT:
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        P1OUT |= RED_LED;
+        P6OUT &= ~GRN_LED;
+        break;
+    case GO_LEFT:
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        P1OUT &= ~RED_LED;
+        P6OUT |= GRN_LED;
+        break;
+    default: break;
+    }
+}
+
+
+void Wheels_Process(void) {
+    lcd_BIG_mid();
+    display_changed = TRUE;
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        segment_count = 0;
+        wheel_period = 0;
+    case RUN:
+        switch(segment_count) {
+        case 0:
+            LEFT_FORWARD_SPEED = RIGHT_FAST;
+            RIGHT_FORWARD_SPEED = RIGHT_FAST;
+            LEFT_REVERSE_SPEED = WHEEL_OFF;
+            RIGHT_REVERSE_SPEED = WHEEL_OFF;
+            if ((ADC_Left_Shift < LEFT_WHITE) && (ADC_Right_Shift < RIGHT_WHITE)) {
+                wheel_period ++;
+            }
+            if (wheel_period > 200) {
+                wheel_period = 0;
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                LEFT_REVERSE_SPEED = WHEEL_OFF;
+                RIGHT_REVERSE_SPEED = WHEEL_OFF;
+                add_task('A', 20);
+                //add_task('L', 3);
+                segment_count = 1;
+            }
+            break;
+        case 1:
+            if (task_list[0].task == NULL_CHAR) {
+                segment_count = 2;
+            }
+            break;
+        case 2:
+            black_line_check();
+            LEFT_FORWARD_SPEED = LEFT_FAST;
+            RIGHT_FORWARD_SPEED = RIGHT_FAST;
+            LEFT_REVERSE_SPEED = WHEEL_OFF;
+            RIGHT_REVERSE_SPEED = WHEEL_OFF;
+            if (Turn_State == GO_STRAIGHT) {
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                LEFT_REVERSE_SPEED = WHEEL_OFF;
+                RIGHT_REVERSE_SPEED = WHEEL_OFF;
+                add_task('I', 20);
+                add_task('L', 3);
+                segment_count = 3;
+            }
+            break;
+        case 3:
+            if (task_list[0].task == NULL_CHAR) {
+                segment_count = 4;
+            }
+            ms200Time_Sequence = 0;
+            break;
+        case 4:
+            Line_Following();
+            if (ms200Time_Sequence > 20) {
+                strcpy(display_line[1], "BLACK_LINE");
+                strcpy(display_line[2], "  CIRCLE  ");
+                display_changed = TRUE;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void Line_Following(void) {
+    black_line_check();
+    switch(Turn_State) {
+    case GO_RIGHT:
+        LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_FAST;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        break;
+    case GO_LEFT:
+        LEFT_FORWARD_SPEED = LEFT_FAST;
+        RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        break;
+    case GO_BACK:
+        LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+        RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        break;
+    case GO_STRAIGHT:
+        Wheel_Control();
+    }
+}
+
+void Wheel_Control(void) {
+    /*if (wheel_period++ > 10000) {
+        wheel_period = 0;
+        return;
+    }
+    if (wheel_period > 5000) {
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        return;
+    }*/
+    black_line_check();
+    if (Turn_State == GO_BACK) {
+        RIGHT_REVERSE_SPEED = LEFT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        return;
+    }
+    //int current_error = (ADC_Right_Detect - ADC_Left_Detect) - REFERENCE;
+    int current_error = ((int)ADC_Right_Detect) - ((int)ADC_Left_Detect);
+    //sum_error = sum_error + current_error;
+    //int delta_error = (current_error - previous_error);
+    //previous_error = current_error;
+    //if (sum_error > 1000) {
+    //    sum_error = 100;
+    //}
+    int error = current_error;
+    HEXtoBCD(error);
+    adc_line(1,0);
+    //int error = current_error + delta_error >> 2 + delta_error >> 2;
+    LEFT_FORWARD_SPEED = LEFT_FAST - (error*1000);
+    RIGHT_FORWARD_SPEED = RIGHT_FAST;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+    if (LEFT_FAST - (error*1000) > 50000) {
+        LEFT_FORWARD_SPEED = 50000;
+    }
+    //if (LEFT_FAST - (error*1000) < 30000) {
+    //    LEFT_FORWARD_SPEED = WHEEL_OFF;
+    //    LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+    //}
+
+}
+
+
+
+
+
+
+
+
+void intercept_case(void) {
+    black_line_check();
+    switch(Turn_State) {
+    case GO_BACK:
+        segment_count++;
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        if (segment_count > 20) {
+            state = WAIT;
+            intercept = TURN;
+        }
+        break;
+    default: break;
+    }
+}
+
+void Wheel_Stop(void) {
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+}
+
+/*void Wheels_Process(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case INTERCEPT:
+        if (cycle_time > 100) {
+            cycle_time = 0;
+        }
+        if (cycle_time++ > 50) {
+            Wheel_Stop();
+            break;
+        }
+        intercept_case();
+        break;
+    case TURN:
+        if (ms200Time_Sequence < 20) {
+            RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+            LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+            RIGHT_REVERSE_SPEED = WHEEL_OFF;
+            LEFT_FORWARD_SPEED = WHEEL_OFF;
+            break;
+        }
+        else {
+            Wheel_Stop();
+            intercept = INTERCEPTED;
+            state = RUN;
+            break;
+        }
+        break;
+    case RUN:
+        switch(intercept) {
+        case NOT_INTERCEPTED:
+            state = INTERCEPT;
+            P6OUT |= GRN_LED;
+            break;
+        case TURN:
+            state = TURN;
+            P6OUT &= ~GRN_LED;
+            break;
+        }
+        if (intercept == NOT_INTERCEPTED) {
+            state = INTERCEPT;
+            P6OUT |= GRN_LED;
+            break;
+        }
+        if (intercept == TURN) {
+            state = TURN;
+            break;
+        }
+        P6OUT &= ~GRN_LED;
+        LINE_CHECK();
+
+        if (wheel_period > 600) {
+            wheel_period = 0;
+        }
+        if (wheel_period++ > 100) {
+            Wheel_Stop();
+            break;
+        }
+
+        if (cycle_time > 1000) {
+            //LCD_BACKLITE_DIMING = WHEEL_OFF;
+            cycle_time = 0;
+        }
+        if (cycle_time++ > 400) {
+            //LCD_BACKLITE_DIMING = PERCENT_80;
+            Wheel_Stop();
+            break;
+        }
+
+        switch(Turn_State) {
+        case GO_STRAIGHT:
+            state = RUN_STRAIGHT;
+            break;
+        case GO_LEFT:
+            state = RUN_LEFT;
+            break;
+        case GO_RIGHT:
+            state = RUN_RIGHT;
+            break;
+        case GO_BACK:
+            state = RUN_BACK;
+        default: break;
+        }
+        if (ms200Time_Sequence > 1000) {
+            state = MOVE_OUT;
+            cycle_time = 0;
+        }
+        break;
+    case RUN_STRAIGHT:
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], " FOR      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_LEFT:
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "LEFT      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_RIGHT:
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "RGHT      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_BACK:
+        //-----------------
+
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "BACK      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        state = RUN;
+        break;
+
+        //-----------------
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "BACK      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = LEFT_SLOW;
+        RIGHT_REVERSE_SPEED = RIGHT_SLOW;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        state = RUN;
+        break;
+    case MOVE_OUT:
+        strcpy(display_line[0], " EXITING  ");
+        strcpy(display_line[1], "          ");
+        display_changed = TRUE;
+        move_out_case();
+        break;
+    case END:
+        end_case();
+        break;
+    default: break;
+
+    }
+}
+*/
+
+void move_out_case() {
+    switch(cycle_time++) {
+    case 1:
+        Wheel_Stop();
+        break;
+    case 20:
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_REVERSE_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        break;
+    case 30:
+        Wheel_Stop();
+        break;
+    case 50:
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        break;
+    case 70:
+        Wheel_Stop();
+        cycle_time = 0;
+        state = END;
+        break;
+    default: break;
+    }
+}
+void black_line_check(void) {
+    if ((ADC_Left_Shift >= LEFT_BLACK) && (ADC_Right_Shift >= RIGHT_BLACK) ) {
+        Turn_State = GO_STRAIGHT;
+    } else if (ADC_Left_Shift >= LEFT_BLACK) {
+        Turn_State = GO_LEFT;
+    } else if (ADC_Right_Shift >= RIGHT_BLACK){
+        Turn_State = GO_RIGHT;
+    } else {
+        Turn_State = GO_BACK;
+    }
+}
+
+//wait_case defines what happens when the button is pressed
+void wait_case(void) {
+    strcpy(display_line[0], "    SW    ");
+    strcpy(display_line[1], "WAIT      ");
+    if(delay_start++ >= WAITING2START) {
+        delay_start = 0;
+        state = START;
+    }
+}
+
+void start_case(void) {
+    strcpy(display_line[0], "    SW    ");
+    strcpy(display_line[1], "START     ");
+    display_changed = TRUE;
+    cycle_time = 0;
+    right_motor_count = 0;
+    left_motor_count = 0;
+    //Forward_On();
+    segment_count = 0;
+    state = RUN;
+    operation = ON;
+}
+
+void end_case(void) {
+    //Forward_Off();
+    state = WAIT;
+    Switch_State = NONE;
+    run_time = 0;
+    segment_count = 0;
+    //Switch_State = NONE;
+    strcpy(display_line[0], "          ");
+    strcpy(display_line[1], "End       ");
+    display_changed = TRUE;
+}
+

@@ -1,0 +1,200 @@
+/*
+ * interrupts_timers.c
+ *
+ *  Created on: Feb 20, 2025
+ *      Author: chait
+ */
+
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+unsigned int blink_count = 0; //blink count for LCD display
+unsigned int lcd_display_count = 0; //count for updating backlight
+unsigned int update_lcd_count = 0; //count for updating LCD display
+volatile unsigned int Time_Sequence = 0;
+volatile char one_time = 0;
+unsigned int tens_count = 0;
+
+volatile unsigned int debounce_count = 0;
+volatile unsigned char debounce_check = DEBOUNCE_OFF;
+volatile unsigned char debounce_switch = NONE;
+unsigned char ADC_Switch = THUMB;
+
+
+volatile unsigned int twenty_ms_count = 0;
+
+//-------------------------------------------------------------------
+
+#pragma vector = TIMER1_B0_VECTOR
+__interrupt void Timer1_B0_ISR(void) {
+    if (ms200Time_Sequence > 9998) {
+        ms200Time_Sequence = 0;
+    }
+    ms200Time_Sequence += 2;
+    update_display = 1;
+
+    ADCCTL0 &= ~ADCENC; // Disable Conversions
+    ADC_Channel = 0x02; //switch to thumb adc
+    ADCMCTL0 &= ~ADCINCH_2; //turn off adc for left and right
+    ADCMCTL0 &= ~ADCINCH_3;
+    ADCMCTL0 |= ADCINCH_5; //turn on adc for thumb
+    ADCCTL0 |= ADCSC; //start data
+    ADCCTL0 |= ADCENC; //Enable Conversions
+
+
+
+
+    //P6OUT ^= GRN_LED;
+    TB1CCR0 += TB1CCR0_INTERVAL;
+}
+
+#pragma vector = TIMER1_B1_VECTOR
+__interrupt void Timer1_B1_ISR(void) {
+    //---------------------
+    //Timer B1 1-2, Overflow Interrupt Vector (TBIV) handler
+    //---------------------
+
+    switch (__even_in_range(TB1IV, 14)) {
+    case 0: break; //No interrupt
+    case 2: //CCR1
+        //look through sequence and make sure first task is set... delays are to set up before ready
+        //looping through only first task...if multiple commands set, all will be made ready when it is the turn
+        if ((task_list[0].task != NULL_CHAR) & (task_list[0].enabled == 0) & (task_list[0].delay != 0)) {
+            task_list[0].delay --;
+            P1OUT |= RED_LED;
+            if (task_list[0].delay == 0) {
+                P1OUT &= ~RED_LED;
+                task_list[0].ready = TRUE;
+                //task_list[0].delay = task_list[0].period;
+            } //end if zero
+        } //end if && && &&
+        TB1CCR1 += TB1CCR1_INTERVAL;
+        break;
+    case 4:
+        //CCR2
+        if (task_list[0].period > 3000) {
+            task_list[0].period = 0;
+        }
+        if (task_list[0].enabled == TRUE && task_list[0].period != 0) {
+            task_list[0].period --;
+            TB1CCR2 = TB1R + TB1CCR2_INTERVAL;
+        }
+        break;
+    case 14:    //overflow available for greater than 1 second timer
+        //P1OUT ^= RED_LED;
+        TB1CTL &= ~TBIFG; // Clear Overflow Interrupt flag
+        //add code
+
+        break;
+    default: break;
+    }
+}
+
+
+
+//TB0CCR0 interrupt vector for TB0CCR0 CCIFG
+//TB0IV interrupt vector for all other CCIFG flags and TBIFG
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer0_B0_ISR(void) {
+    //--------------------
+    //Timer B0 0 Interrupt Handler
+    //--------------------
+    //ADC timer
+
+    /*if (ADC_Channel ++ > 2) {
+        ADC_Channel = 0;
+    }*/
+    ADCCTL0 |= ADCSC;
+
+    //ADCCTL0 |= ADCENC; // Enable Conversions
+
+
+    //Time Sequence
+    one_time = 1;
+    if(Time_Sequence++ > 250) {
+        Time_Sequence = 0;
+    }
+
+
+
+
+    TB0CCR0 += TB0CCR0_INTERVAL;    //Add offset to TBCCR0
+}
+
+#pragma vector = TIMER0_B1_VECTOR
+__interrupt void Timer0_B1_ISR(void) {
+    //---------------------
+    //Timer B0 1-2, Overflow Interrupt Vector (TBIV) handler
+    //---------------------
+
+    switch (__even_in_range(TB0IV, 14)) {
+    case 0: break; //No interrupt
+    case 2: //CCR1 used for SW1 Debounce
+        //Disable Timer B0 CCR1
+        TB0CCTL1 &= ~CCIE; // CCR1 enable interrupt
+        //Clear SW1 Interrupt Flag
+        P4IFG &= ~SW1;
+        //Enable SW1 Interrupt
+        P4IE |= SW1;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        //Shape_Count ++;
+        //Switch_State = SWITCH_1;
+        TB0CCR1 += TB0CCR1_INTERVAL;    //Add offset to TBCCR1
+        break;
+    case 4:
+        //CCR2 used for SW2 Debounce
+        //Disable Timer B0 CCR2
+        TB0CCTL2 &= ~CCIE;
+        //Clear SW2 Interrupt Flag
+        P2IFG &= ~SW2;
+        //Enable SW2 Interrupt
+        P2IE |= SW2;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        //Switch_State = SWITCH_2;
+        TB0CCR2 += TB0CCR2_INTERVAL;    //Add offset to TBCCR2
+        break;
+    case 14:    //overflow available for greater than 1 second timer
+        TB0CTL &= ~TBIFG; // Clear Overflow Interrupt flag
+        //add code
+        DAC_data = DAC_data - 100;
+        SAC3DAT = DAC_data;     //initial DAC data
+        if (DAC_data <= DAC_Limit) {
+            DAC_data = DAC_Adjust;
+            SAC3DAT = DAC_data; //initial DAC data
+            TB0CTL &= ~TBIE;    //disable TimerB0 overflow interrupt
+            P1OUT ^= RED_LED;
+        }
+        break;
+    default: break;
+    }
+}
+
+/*
+#pragma vector = TIMER3_B0_VECTOR
+__interrupt void Timer3_B0_ISR(void) {
+    PWM_PERIOD += TB3CCR0_INTERVAL;    //Add offset to PWM_PERIOD
+
+}
+
+#pragma vector TIMER3_B1_VECTOR
+__interrupt void Timer3_B0_ISR(void) {
+    //---------------------
+        //Timer B3 1-5, Overflow Interrupt Vector (TBIV) handler
+        //---------------------
+
+        switch (__even_in_range(TB0IV, 14)) {
+        case 0: break;
+        case 2:
+            //CCR1 interrupt, Right Forward Speed
+            RIGHT_FORWARD_SPEED = WHEEL_OFF;
+            break;
+        case 4:
+            //CCR2 interrupt, Left Forward Speed
+
+        }
+}
+*/
