@@ -1,0 +1,311 @@
+/*
+ * wheels.c
+ * description: will hold all functions related to wheel movement
+ *  Created on: Feb 10, 2025
+ *      Author: chait
+ */
+//includes
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+#define GO_LEFT ('L')
+#define GO_RIGHT ('R')
+#define GO_STRAIGHT ('S')
+#define GO_BACK ('B')
+#define NOT_INTERCEPTED ('N')
+#define INTERCEPTED ('I')
+#define RUN_STRAIGHT ('T')
+#define RUN_RIGHT ('G')
+#define RUN_LEFT ('L')
+#define RUN_BACK ('B')
+#define INTERCEPT ('I')
+#define MOVE_OUT ('M')
+
+
+//global variables
+unsigned char state = 'W';
+unsigned int right_motor_count = 0;
+unsigned int left_motor_count = 0;
+unsigned int segment_count = 0;
+unsigned int delay_start = 0;
+//const unsigned int wheel_count = 18;
+unsigned char operation;
+unsigned int wheel_period = 0;
+unsigned int run_time = 0;
+unsigned char Turn_State = GO_BACK;
+unsigned char intercept = NOT_INTERCEPTED;
+
+void LINE_CHECK(void) {
+    black_line_check();
+    //Wheel_Stop();
+    switch(Turn_State) {
+    case GO_BACK:
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        P1OUT |= RED_LED;
+        P6OUT |= GRN_LED;
+        break;
+    case GO_STRAIGHT:
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        P1OUT &= ~RED_LED;
+        P6OUT &= ~GRN_LED;
+        break;
+    case GO_RIGHT:
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        P1OUT |= RED_LED;
+        P6OUT &= ~GRN_LED;
+        break;
+    case GO_LEFT:
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        P1OUT &= ~RED_LED;
+        P6OUT |= GRN_LED;
+        break;
+    default: break;
+    }
+}
+
+
+void intercept_case(void) {
+    black_line_check();
+    switch(Turn_State) {
+    case GO_BACK:
+        strcpy(display_line[0], "INTER-    ");
+        strcpy(display_line[1], "CEPTING   ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        break;
+    case GO_STRAIGHT:
+        state = WAIT;
+        intercept = INTERCEPTED;
+        break;
+    default: break;
+    }
+}
+
+void Wheel_Stop(void) {
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+}
+
+void Wheels_Process(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        ms200Time_Sequence = 0;
+        break;
+    case INTERCEPT:
+        if (cycle_time > 100) {
+            cycle_time = 0;
+        }
+        if (cycle_time++ > 50) {
+            Wheel_Stop();
+            break;
+        }
+        intercept_case();
+    case RUN:
+        if (intercept == NOT_INTERCEPTED) {
+            state = INTERCEPT;
+            P6OUT |= GRN_LED;
+            break;
+        }
+        P6OUT &= ~GRN_LED;
+        LINE_CHECK();
+
+        /*if (wheel_period > 600) {
+            wheel_period = 0;
+        }
+        if (wheel_period++ > 100) {
+            Wheel_Stop();
+            break;
+        }*/
+
+        if (cycle_time > 1000) {
+            //LCD_BACKLITE_DIMING = WHEEL_OFF;
+            cycle_time = 0;
+        }
+        if (cycle_time++ > 500) {
+            //LCD_BACKLITE_DIMING = PERCENT_80;
+            Wheel_Stop();
+            break;
+        }
+
+        switch(Turn_State) {
+        case GO_STRAIGHT:
+            state = RUN_STRAIGHT;
+            break;
+        case GO_LEFT:
+            state = RUN_LEFT;
+            break;
+        case GO_RIGHT:
+            state = RUN_RIGHT;
+            break;
+        case GO_BACK:
+            state = RUN_BACK;
+        default: break;
+        }
+        if (ms200Time_Sequence > 1000) {
+            state = MOVE_OUT;
+            cycle_time = 0;
+        }
+        break;
+    case RUN_STRAIGHT:
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], " FOR      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_LEFT:
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "LEFT      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+        LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_RIGHT:
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "RGHT      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        LCD_BACKLITE_DIMING = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_BACK:
+        //-----------------
+        /*
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "BACK      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        state = RUN;
+        break;
+        */
+        //-----------------
+        strcpy(display_line[0], " RUNNING  ");
+        strcpy(display_line[1], "BACK      ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = LEFT_SLOW;
+        RIGHT_REVERSE_SPEED = RIGHT_SLOW;
+        LCD_BACKLITE_DIMING = PERCENT_80;
+        state = RUN;
+        break;
+    case MOVE_OUT:
+        strcpy(display_line[0], " EXITING  ");
+        strcpy(display_line[1], "          ");
+        display_changed = TRUE;
+        move_out_case();
+        break;
+    case END:
+        end_case();
+        break;
+    default: break;
+
+    }
+}
+
+void move_out_case() {
+    switch(cycle_time++) {
+    case 1:
+        Wheel_Stop();
+        break;
+    case 20:
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_REVERSE_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        break;
+    case 30:
+        Wheel_Stop();
+        break;
+    case 50:
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        break;
+    case 70:
+        Wheel_Stop();
+        cycle_time = 0;
+        state = END;
+        break;
+    default: break;
+    }
+}
+void black_line_check(void) {
+    if ((ADC_Left_Shift >= LEFT_BLACK) && (ADC_Right_Shift >= RIGHT_BLACK) ) {
+        Turn_State = GO_STRAIGHT;
+    } else if (ADC_Left_Shift >= LEFT_BLACK) {
+        Turn_State = GO_LEFT;
+    } else if (ADC_Right_Shift >= RIGHT_BLACK){
+        Turn_State = GO_RIGHT;
+    } else {
+        Turn_State = GO_BACK;
+    }
+}
+
+//wait_case defines what happens when the button is pressed
+void wait_case(void) {
+    strcpy(display_line[0], "    SW    ");
+    strcpy(display_line[1], "WAIT      ");
+    if(time_change) {
+        time_change = 0;
+        if(delay_start++ >= WAITING2START) {
+            delay_start = 0;
+            state = START;
+        }
+    }
+}
+
+void start_case(void) {
+    strcpy(display_line[0], "    SW    ");
+    strcpy(display_line[1], "START     ");
+    display_changed = TRUE;
+    cycle_time = 0;
+    right_motor_count = 0;
+    left_motor_count = 0;
+    //Forward_On();
+    segment_count = 0;
+    state = RUN;
+    operation = ON;
+}
+
+void end_case(void) {
+    //Forward_Off();
+    state = WAIT;
+    Switch_State = NONE;
+    run_time = 0;
+    segment_count = 0;
+    //Switch_State = NONE;
+    strcpy(display_line[0], "          ");
+    strcpy(display_line[1], "End       ");
+    display_changed = TRUE;
+}
+

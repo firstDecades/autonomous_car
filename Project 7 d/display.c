@@ -1,0 +1,42 @@
+/*
+ * display.c
+ *  description: defines how display is updated
+ *  Created on: Jan 30, 2025
+ *      Author: chait
+ */
+
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+    unsigned int ADC_Thumb_Shift = 0x0000;
+    volatile unsigned int ADC_Left_Shift = 0x0000;
+    volatile unsigned int ADC_Right_Shift = 0x0000;
+void Display_Process(void){
+  if(update_display){
+    update_display = 0;
+    if(display_changed){
+      display_changed = 0;
+      Display_Update(0,0,0,0);
+    }
+  }
+}
+
+void LCD_update_ADC(void) {
+    //ADC_Thumb_Shift = ADC_V_Thumb >> 4;
+    ADC_Left_Shift = ADC_Left_Detect >> 4;
+    ADC_Right_Shift = ADC_Right_Detect >> 4;
+    //HEXtoBCD(ADC_Thumb_Shift);
+    TIMERtoBCD(ms200Time_Sequence);
+    //strcpy(display_line[0], "V_Th      ");
+    timer_line(3,4);
+    HEXtoBCD(ADC_Left_Shift);
+    //strcpy(display_line[1], "V_LD      ");
+    adc_line(4,0);
+    HEXtoBCD(ADC_Right_Shift);
+    //strcpy(display_line[2], "V_RD      ");
+    adc_line(4,5);
+    display_changed = TRUE;
+}

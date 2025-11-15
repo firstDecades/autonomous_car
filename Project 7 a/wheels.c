@@ -1,0 +1,1463 @@
+/*
+ * wheels.c
+ * description: will hold all functions related to wheel movement
+ *  Created on: Feb 10, 2025
+ *      Author: chait
+ */
+//includes
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+#define GO_LEFT ('L')
+#define GO_RIGHT ('R')
+#define GO_STRAIGHT ('S')
+#define GO_BACK ('B')
+#define NOT_INTERCEPTED ('N')
+#define INTERCEPTED ('I')
+#define RUN_STRAIGHT ('T')
+#define RUN_RIGHT ('G')
+#define RUN_LEFT ('L')
+#define RUN_BACK ('B')
+#define INTERCEPT ('I')
+
+
+//global variables
+unsigned char state = 'W';
+unsigned int right_motor_count = 0;
+unsigned int left_motor_count = 0;
+unsigned int segment_count = 0;
+unsigned int delay_start = 0;
+//const unsigned int wheel_count = 18;
+unsigned char operation;
+unsigned int wheel_period = 0;
+unsigned int run_time = 0;
+unsigned char Turn_State = GO_BACK;
+unsigned char intercept = NOT_INTERCEPTED;
+
+
+
+
+void intercept_case(void) {
+    black_line_check();
+    switch(Turn_State) {
+    case GO_BACK:
+        strcpy(display_line[0], "INTER-    ");
+        strcpy(display_line[1], "CEPTING   ");
+        display_changed = TRUE;
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        break;
+    case GO_STRAIGHT:
+        state = WAIT;
+        intercept = INTERCEPTED;
+        break;
+    default: break;
+    }
+}
+
+void Wheels_Process(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case INTERCEPT:
+        intercept_case();
+    case RUN:
+        if (intercept == NOT_INTERCEPTED) {
+        state = INTERCEPT;
+        break;
+        }
+        black_line_check();
+        switch(Turn_State) {
+        case GO_STRAIGHT:
+            state = RUN_STRAIGHT;
+            break;
+        case GO_LEFT:
+            state = RUN_LEFT;
+            break;
+        case GO_RIGHT:
+            state = RUN_RIGHT;
+            break;
+        case GO_BACK:
+            state = RUN_BACK;
+        default: break;
+        }
+    case RUN_STRAIGHT:
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_FORWARD_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_LEFT:
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = RIGHT_SLOW;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_RIGHT:
+        LEFT_FORWARD_SPEED = LEFT_SLOW;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = WHEEL_OFF;
+        RIGHT_REVERSE_SPEED = WHEEL_OFF;
+        state = RUN;
+        break;
+    case RUN_BACK:
+        LEFT_FORWARD_SPEED = WHEEL_OFF;
+        RIGHT_FORWARD_SPEED = WHEEL_OFF;
+        LEFT_REVERSE_SPEED = LEFT_SLOW;
+        RIGHT_REVERSE_SPEED = RIGHT_SLOW;
+        state = RUN;
+        break;
+
+    }
+}
+void black_line_check(void) {
+    if ((ADC_Left_Shift > LEFT_BLACK) && (ADC_Right_Shift > RIGHT_BLACK) ) {
+        Turn_State = GO_STRAIGHT;
+    } else if (ADC_Left_Shift > LEFT_BLACK) {
+        Turn_State = GO_LEFT;
+    } else if (ADC_Left_Shift > RIGHT_BLACK){
+        Turn_State = GO_RIGHT;
+    } else {
+        Turn_State = GO_BACK;
+    }
+}
+/*
+void Wheels_Process(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        segment_count = 0;
+        break;
+    case RUN:
+        P2OUT |= IR_LED;
+        switch(segment_count) {
+        case 0:
+            black_line_check();
+            if (cycle_time++ > 10) {
+                if (cycle_time > 100) {
+                    cycle_time = 0;
+                    break;
+                } else {
+                    LEFT_FORWARD_SPEED = WHEEL_OFF;
+                    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                    break;
+                }
+            }
+            LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+
+            RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+            if (segment_count == 0) {
+                LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+                RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+                black_line_check();
+            } else {
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+            }
+            break;
+        case 1:
+            if (cycle_time++ < 100) {
+                LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+                RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+            } else {
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                segment_count ++;
+                cycle_time = 0;
+            }
+            break;
+        case 2:
+            if (cycle_time++ < 1*ONE_SEC) {
+                strcpy(display_line[0], "Black     ");
+                strcpy(display_line[1], "Line      ");
+                strcpy(display_line[2], "Detect    ");
+                display_changed = TRUE;
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                LEFT_REVERSE_SPEED = WHEEL_OFF;
+                RIGHT_REVERSE_SPEED = WHEEL_OFF;
+                //segment_count++;
+            }
+            else {
+                segment_count++;
+                cycle_time = 0;
+            }
+            break;
+        case 3:
+            black_line_check();
+            if (cycle_time++ > 10) {
+                if (cycle_time > 50) {
+                    cycle_time = 0;
+                    break;
+                } else {
+                    LEFT_FORWARD_SPEED = WHEEL_OFF;
+                    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                    LEFT_REVERSE_SPEED = WHEEL_OFF;
+                    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+                    break;
+                }
+            }
+            if (segment_count == 3) {
+                if (ADC_Left_Detect > LEFT_BLACK) {
+                    run_case_right_turn();
+                    black_line_check();
+                } else {
+                    run_case_left_turn();
+                    black_line_check();
+                }
+            } else {
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                LEFT_REVERSE_SPEED = WHEEL_OFF;
+                RIGHT_REVERSE_SPEED = WHEEL_OFF;
+                cycle_time = 0;
+            }
+            break;
+        case 4:
+            while (ms200Time_Sequence < 999) {
+
+            }
+        case 5:
+            if (cycle_time++ < ONE_SEC) {
+                strcpy(display_line[0], "END      ");
+                strcpy(display_line[1], "END      ");
+                strcpy(display_line[2], "END      ");
+                display_changed = TRUE;
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                LEFT_REVERSE_SPEED = WHEEL_OFF;
+                RIGHT_REVERSE_SPEED = WHEEL_OFF;
+            }
+            else {
+                cycle_time = 0;
+                state = END;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case END:
+        end_case();
+        break;
+    default: break;
+    }
+}
+*/
+
+void Wheels_Forward_Till_Black_Line(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        segment_count = 0;
+        break;
+    case RUN:
+        switch(segment_count) {
+        case 0:
+            P2OUT |= IR_LED;
+            if ((ADC_Left_Shift > LEFT_BLACK) & (ADC_Right_Shift > RIGHT_BLACK) ) {
+                segment_count = 1;
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+            }
+            if (cycle_time > 100) {
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                segment_count = 1;
+                break;
+            }
+            if (cycle_time > 50) {
+                cycle_time = 0;
+                break;
+            }
+            if (cycle_time++ > 10) {
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                break;
+            } else {
+            //if (cycle_time < 60) {
+                if ((ADC_Left_Shift > LEFT_BLACK) & (ADC_Right_Shift > RIGHT_BLACK) ) {
+                    LEFT_FORWARD_SPEED = WHEEL_OFF;
+                    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                    cycle_time = 150;
+                    //cycle_time ++;
+                    segment_count++;
+                }
+                else {
+                    LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+                    RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+                }
+            }
+           // else {
+           //     cycle_time = 0;
+           //     segment_count ++;
+           // }
+            break;
+        case 1:
+            if (cycle_time++ < 1*ONE_SEC) {
+                strcpy(display_line[0], "Black     ");
+                strcpy(display_line[1], "Line      ");
+                strcpy(display_line[2], "Detect    ");
+                display_changed = TRUE;
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                LEFT_REVERSE_SPEED = WHEEL_OFF;
+                RIGHT_REVERSE_SPEED = WHEEL_OFF;
+                //segment_count++;
+            }
+            else {
+                segment_count++;
+                cycle_time = 0;
+            }
+            break;
+        case 2:
+            if (cycle_time++ < 10) {
+                LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+                RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+            } else {
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                cycle_time = 0;
+                segment_count ++;
+            }
+            break;
+        case 3:
+            black_line_check();
+            //LEFT_FORWARD_SPEED = WHEEL_OFF;
+            //RIGHT_FORWARD_SPEED = WHEEL_OFF;
+            //LEFT_REVERSE_SPEED = WHEEL_OFF;
+            //RIGHT_REVERSE_SPEED = WHEEL_OFF;
+            if (cycle_time < 50) {
+                if ((ADC_Left_Shift > LEFT_BLACK) && (ADC_Right_Shift > RIGHT_BLACK) ) {
+                    LEFT_FORWARD_SPEED = WHEEL_OFF;
+                    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+                    cycle_time ++;
+                }
+                else if (ADC_Left_Shift < LEFT_BLACK) {
+                    strcpy(display_line[0], "LEFT      ");
+                    strcpy(display_line[1], "TURN      ");
+                    strcpy(display_line[2], "Detect    ");
+                    display_changed = TRUE;
+                    run_case_left_turn();
+
+                }
+                else {
+                    strcpy(display_line[0], "RIGHT     ");
+                    strcpy(display_line[1], "TURN      ");
+                    strcpy(display_line[2], "Detect    ");
+                    display_changed = TRUE;
+                    run_case_right_turn();
+                }
+            }
+            else {
+                cycle_time = 0;
+                segment_count ++;
+            }
+            /*
+            else if (ADC_Left_Shift < LEFT_BLACK) {
+                run_case_left_turn();
+            }
+            else {
+                run_case_right_turn();
+            }*/
+
+            break;
+        case 4:
+            if (cycle_time++ < ONE_SEC) {
+                strcpy(display_line[0], "END      ");
+                strcpy(display_line[1], "END      ");
+                strcpy(display_line[2], "END      ");
+                display_changed = TRUE;
+                LEFT_FORWARD_SPEED = WHEEL_OFF;
+                RIGHT_FORWARD_SPEED = WHEEL_OFF;
+                LEFT_REVERSE_SPEED = WHEEL_OFF;
+                RIGHT_REVERSE_SPEED = WHEEL_OFF;
+            }
+            else {
+                cycle_time = 0;
+                state = END;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case END:
+        end_case();
+        P1OUT |= RED_LED;
+        //Switch_State = NONE;
+        break;
+    default: break;
+    }
+}
+
+
+void run_case_right_turn(void) {
+    //RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+    RIGHT_FORWARD_SPEED = RIGHT_VERY_SLOW;
+    LEFT_FORWARD_SPEED = WHEEL_OFF;
+    LEFT_REVERSE_SPEED = LEFT_VERY_SLOW;
+    RIGHT_REVERSE_SPEED = WHEEL_OFF;
+}
+void run_case_left_turn(void) {
+    //LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+    LEFT_FORWARD_SPEED = LEFT_VERY_SLOW;
+    RIGHT_FORWARD_SPEED = WHEEL_OFF;
+    RIGHT_REVERSE_SPEED = RIGHT_VERY_SLOW;
+    LEFT_REVERSE_SPEED = WHEEL_OFF;
+}
+
+
+void Project_5(void) {
+    switch(state) {
+    case WAIT: {
+        wait_case();
+        break;
+    }
+    case START: {
+        start_case();
+        break;
+    }
+    case RUN: {
+        switch(segment_count) {
+        case 0:
+            strcpy(display_line[1], "  1-S FOR ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_forward();
+            break;
+        case 1:
+            strcpy(display_line[1], " 1-S PAUSE");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_wait();
+            break;
+        case 2:
+            strcpy(display_line[1], " 2-S BACK ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_backward();
+            break;
+        case 3:
+            strcpy(display_line[1], " 2-S BACK ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_backward();
+            break;
+        case 4:
+            strcpy(display_line[1], " 1-S PAUSE");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_wait();
+            break;
+        case 5:
+            strcpy(display_line[1], "  1-S FOR ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_forward();
+            break;
+        case 6:
+            strcpy(display_line[1], " 1-S PAUSE");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_wait();
+            break;
+        case 7:
+            strcpy(display_line[1], "  3-S CWS ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_clockwise();
+            break;
+        case 8:
+            strcpy(display_line[1], "  3-S CWS ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_clockwise();
+            break;
+        case 9:
+            strcpy(display_line[1], "  3-S CWS ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_clockwise();
+            break;
+        case 10:
+            strcpy(display_line[1], " 2-S PAUSE");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_wait();
+            break;
+        case 11:
+            strcpy(display_line[1], " 2-S PAUSE");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_wait();
+            break;
+        case 12:
+            strcpy(display_line[1], " 3-S CCWS ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_counterclockwise();
+            break;
+        case 13:
+            strcpy(display_line[1], " 3-S CCWS ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_counterclockwise();
+            break;
+        case 14:
+            strcpy(display_line[1], " 3-S CCWS ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_one_sec_counterclockwise();
+            break;
+        case 15:
+            strcpy(display_line[1], " 2-S PAUSE");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_wait();
+            break;
+        case 16:
+            strcpy(display_line[1], " 2-S PAUSE");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            run_case_wait();
+        case 17:
+            operation = OFF;
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~L_REVERSE;
+            P6OUT &= ~R_FORWARD;
+            P6OUT &= ~R_REVERSE;
+            state = END;
+            break;
+        }
+        break;
+    }
+    case END: {
+        if (segment_count < 17) {
+            state = RUN;
+        } else {
+            if (run_time++ < 0){ //run once
+                state = WAIT;
+            } else {
+                end_case();
+                Switch_State = NONE;
+            }
+        }
+        break;
+    }
+    default: break;
+    }
+}
+
+void Three_Sec_Counterclockwise(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case RUN: {
+        strcpy(display_line[1], "  3-S CWS ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        switch(segment_count) {
+        case 0: {
+            run_case_one_sec_counterclockwise();
+            break;
+        }
+        case 1: {
+            run_case_one_sec_counterclockwise();
+            break;
+        }
+        case 2: {
+            run_case_one_sec_counterclockwise();
+            break;
+        }
+        case 3: {
+            run_case_wait();
+            break;
+        }
+        case 4: {
+            run_case_wait();
+            break;
+        }
+        case 5: {
+            operation = OFF;
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~L_REVERSE;
+            P6OUT &= ~R_FORWARD;
+            P6OUT &= ~R_REVERSE;
+            state = END;
+            break;
+        }
+        default: break;
+
+        }
+        break;
+    }
+    case END:               //end
+        if (segment_count < 5) {
+            state = RUN;
+        } else {
+            if (run_time++ < 0){ //run once
+                state = WAIT;
+            } else {
+                end_case();
+                Switch_State = NONE;
+            }
+        }
+        break;
+
+
+    }
+}
+
+void run_case_one_sec_counterclockwise(void) {
+    if(time_change) {
+
+            if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+                P6OUT &= ~R_FORWARD;
+                P6OUT &= ~R_REVERSE;
+            }
+            if (left_motor_count++ >= LEFT_COUNT_TIME) {
+                P6OUT &= ~L_FORWARD;
+                P6OUT &= ~L_REVERSE;
+            }
+            //turns off wheels when count is off
+
+            if (cycle_time >= ONE_SEC) {
+                cycle_time = 0;
+                right_motor_count = 0;
+                left_motor_count = 0;
+                segment_count++;
+                //Forward_Move();
+            //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+            } else {
+                operation = ON;
+                P6OUT |= R_FORWARD;
+                P6OUT |= L_REVERSE;
+                //wheels_backwards_control();
+                //keeps operation on, run straight back
+            }
+        }
+}
+
+void Three_Sec_Clockwise(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case RUN: {
+        strcpy(display_line[1], "  3-S CWS ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        switch(segment_count) {
+        case 0: {
+            run_case_one_sec_clockwise();
+            break;
+        }
+        case 1: {
+            run_case_one_sec_clockwise();
+            break;
+        }
+        case 2: {
+            run_case_one_sec_clockwise();
+            break;
+        }
+        case 3: {
+            run_case_wait();
+            break;
+        }
+        case 4: {
+            run_case_wait();
+            break;
+        }
+        case 5: {
+            operation = OFF;
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            P6OUT &= ~L_REVERSE;
+            P6OUT &= ~R_REVERSE;
+            state = END;
+            break;
+        }
+        default: break;
+
+        }
+        break;
+    }
+    case END:               //end
+        if (segment_count < 5) {
+            state = RUN;
+        } else {
+            if (run_time++ < 0){ //run once
+                state = WAIT;
+            } else {
+                end_case();
+                Switch_State = NONE;
+            }
+        }
+        break;
+
+
+    }
+}
+
+void run_case_one_sec_clockwise(void) {
+    if(time_change) {
+            wheel_period++;
+            //wheel_period used in Wheels_Straight_control
+
+            if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+                P6OUT &= ~R_FORWARD;
+                P6OUT &= ~R_REVERSE;
+            }
+            if (left_motor_count++ >= LEFT_COUNT_TIME) {
+                P6OUT &= ~L_FORWARD;
+                P6OUT &= ~L_REVERSE;
+            }
+            //turns off wheels when count is off
+
+            if (cycle_time >= ONE_SEC) {
+                cycle_time = 0;
+                right_motor_count = 0;
+                left_motor_count = 0;
+                segment_count++;
+                //Forward_Move();
+            //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+            } else {
+                operation = ON;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_REVERSE;
+                //wheels_backwards_control();
+                //keeps operation on, run straight back
+            }
+        }
+}
+
+void Two_Sec_Backward(void) {
+    switch(state) {
+    case WAIT: {
+        wait_case();
+        break;
+    }
+    case START: {
+        start_case();
+        break;
+    }
+    case RUN: {
+        strcpy(display_line[1], " 2-S BACK ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        switch(segment_count) {
+        case 0: {
+            run_case_one_sec_backward();
+            break;
+        }
+        case 1:
+        {
+            run_case_one_sec_backward();
+            break;
+        }
+        case 2:  {
+            run_case_wait();
+            break;
+        }
+        case 3: {
+            operation = OFF;
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            state = END;
+            break;
+        }
+        default: break;
+        }
+        break;
+    }
+    case END:               //end
+        if (segment_count < 3) {
+            state = RUN;
+        } else {
+            if (run_time++ < 0){ //run once
+                state = WAIT;
+            } else {
+                end_case();
+                Switch_State = NONE;
+            }
+        }
+        break;
+    }
+}
+void run_case_one_sec_backward(void) {
+    //inside run_case_one_sec_backward
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+            P6OUT &= ~R_REVERSE;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~L_REVERSE;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= ONE_SEC) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_REVERSE;
+            P6OUT |= R_REVERSE;
+            wheels_backwards_control();
+            //keeps operation on, run straight back
+        }
+    }
+}
+
+void wheels_backwards_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            P6OUT &= ~L_REVERSE;
+            P6OUT &= ~R_REVERSE;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_REVERSE;
+                P6OUT |= R_REVERSE;
+                //strcpy(display_line[2], "slow again");
+                //display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST) {
+                //strcpy(display_line[2], " TOO FAST ");
+                //display_changed = TRUE;
+                P6OUT &= ~L_REVERSE;
+            }
+            break;
+            default: break;
+    }
+}
+
+void One_Sec_Forward(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case RUN:
+        strcpy(display_line[1], "  1-S FOR ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        switch(segment_count) {
+        case 0: {
+            run_case_one_sec_forward();
+            break;
+        }
+        case 1:  {
+            run_case_wait();
+            break;
+        }
+        case 2: {
+            operation = OFF;
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            state = END;
+            break;
+        }
+        default: break;
+        }
+        case END:               //end
+            if (segment_count < 2) {
+                state = RUN;
+            } else {
+                if (run_time++ < 0){ //run once
+                    state = WAIT;
+                } else {
+                    end_case();
+                    Switch_State = NONE;
+                }
+            }
+            break;
+    }
+}
+void run_case_wait(void) {
+    P6OUT &= ~L_FORWARD;
+    P6OUT &= ~R_FORWARD;
+    P6OUT &= ~L_REVERSE;
+    P6OUT &= ~R_REVERSE;
+
+    if(time_change) {
+
+        if (cycle_time >= ONE_SEC) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        }
+    }
+
+}
+void run_case_one_sec_forward(void) {
+    //inside run_case_one)sec_forward
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= ONE_SEC) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_FORWARD;
+            P6OUT |= R_FORWARD;
+            Wheels_Straight_control();
+            //keeps operation on, run straight
+        }
+    }
+}
+
+void Triangle(void) {
+    switch(state) {
+    case WAIT:              //begin
+            wait_case();
+            break;
+        case START:             //initialize
+            start_case();
+            break;
+        case RUN:               //start function
+            strcpy(display_line[1], " TRIANGLE ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            switch(segment_count) {
+            case 0:
+                run_case_straight();
+            case 1:
+                run_case_straight();
+                break;
+            case 2:
+                run_case_turn();
+                break;
+            case 3:
+                run_case_straight();
+                break;
+            case 4:
+                run_case_straight();
+                break;
+            case 5:
+                run_case_turn();
+                break;
+            case 6:
+                run_case_straight();
+                break;
+            case 7:
+                run_case_straight();
+                break;
+            case 8:
+                run_case_turn();
+                break;
+            case 9:
+                operation = OFF;
+                P6OUT &= ~L_FORWARD;
+                P6OUT &= ~R_FORWARD;
+                state = END;
+                break;
+            default: break;
+            }
+
+            break;
+        case END:               //end
+            if (segment_count < 9) {
+                state = RUN;
+            } else {
+                if (run_time++ < 1){
+                    state = WAIT;
+                } else {
+                    end_case();
+                    Switch_State = NONE;
+                }
+            }
+            break;
+        default: break;
+    }
+}
+
+/*
+void run_triangle() {
+    if(time_change) {
+        strcpy(display_line[1], " TRIANGLE ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        if (segment_count <= 9) { //while segment count is less than 9 (9 cases to go through)
+                switch(segment_count) {
+                case 0:
+                    run_case_straight(); //run straight: when segment count is finally incremented in the function, it will move to next case
+                case 1:
+                    run_case_straight();
+                case 2:
+                    run_case_turn();
+                case 3:
+                    run_case_straight();
+                case 4:
+                    run_case_straight();
+                case 5:
+                    run_case_turn();
+                case 6:
+                    run_case_straight();
+                case 7:
+                    run_case_straight();
+                case 8:
+                    run_case_turn();
+                case 9:
+                    operation = OFF;
+                    P6OUT &= ~L_FORWARD;
+                    P6OUT &= ~R_FORWARD;
+                    state = END;
+                default: break;
+            }
+        }
+    }
+}
+*/
+
+//run_case_turn: turns the car to the right
+
+void run_case_turn(void) {
+    if(time_change) {
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        if (cycle_time >= (120 - (5*segment_count))) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        } else {
+            P6OUT |= L_FORWARD;
+            //P6OUT |= R_FORWARD;
+        }
+    }
+}
+
+void run_case_straight(void) {
+    //inside run_case_straight
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= WHEEL_COUNT_TIME) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_FORWARD;
+            P6OUT |= R_FORWARD;
+            Wheels_Straight_control();
+            //keeps operation on, run straight
+        }
+    }
+}
+
+void Wheels_Straight_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                //strcpy(display_line[2], "slow again");
+                //display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST) {
+                //strcpy(display_line[2], " TOO FAST ");
+                //display_changed = TRUE;
+                P6OUT &= ~L_FORWARD;
+            }
+            break;
+            default: break;
+    }
+}
+
+void Figure_8(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case RUN:
+        strcpy(display_line[1], " Figure_8 ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        if (segment_count < 6) {
+            run_case_clockwise();
+        } else if (segment_count < 11) {
+            run_case_counterclockwise();
+        }
+        else {
+            segment_count = 0;
+            state = END;
+        }
+        break;
+    case END:
+        if (run_time++ < 1){
+            state = WAIT; //if turning twice
+        } else {
+            Switch_State = NONE;
+            end_case();
+        }
+        break;
+    default: break;
+    }
+}
+
+void run_case_clockwise(void) {
+    //inside run_case_circle
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= WHEEL_COUNT_TIME) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_FORWARD;
+            P6OUT |= R_FORWARD;
+            wheels_clockwise_control();
+            //keeps operation on, run straight
+        }
+    }
+}
+void wheels_clockwise_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                //strcpy(display_line[2], "slow again");
+                //display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST - 20) {
+                //strcpy(display_line[2], " TOO FAST ");
+                //display_changed = TRUE;
+                P6OUT &= ~R_FORWARD;
+            }
+            break;
+            default: break;
+    }
+}
+
+void run_case_counterclockwise(void) {
+    //inside run_case_circle
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= WHEEL_COUNT_TIME) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_FORWARD;
+            P6OUT |= R_FORWARD;
+            wheels_counterclockwise_control();
+            //keeps operation on, run straight
+        }
+    }
+}
+void wheels_counterclockwise_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                //strcpy(display_line[2], "slow again");
+                //display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST - 25) {
+                //strcpy(display_line[2], " TOO FAST ");
+                //display_changed = TRUE;
+                P6OUT &= ~L_FORWARD;
+            }
+            break;
+            default: break;
+    }
+}
+
+
+void Circle(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case RUN:
+        strcpy(display_line[1], "  CIRCLE  ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        if (segment_count < 11) {
+            run_case_circle();
+        } else {
+            segment_count = 0;
+            state = END;
+        }
+        break;
+    case END:
+        if (run_time++ < 1){
+            state = WAIT; //if turning twice
+        } else {
+            Switch_State = NONE;
+            end_case();
+        }
+        break;
+    default: break;
+    }
+}
+
+void run_case_circle(void) {
+    //inside run_case_circle
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= WHEEL_COUNT_TIME) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_FORWARD;
+            P6OUT |= R_FORWARD;
+            wheels_circle_control();
+            //keeps operation on, run straight
+        }
+    }
+}
+
+void wheels_circle_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                //strcpy(display_line[2], "slow again");
+                display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST - 10) {
+                //strcpy(display_line[2], " TOO FAST ");
+                //display_changed = TRUE;
+                P6OUT &= ~R_FORWARD;
+            }
+            break;
+            default: break;
+    }
+}
+
+
+//run_straight: runs the car straight
+void Run_Straight(void) {
+    switch(state) {
+    case WAIT:              //begin
+        wait_case();
+        break;
+    case START:             //initialize
+        start_case();
+        break;
+    case RUN:               //start function
+        strcpy(display_line[1], " STRAIGHT ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        switch (segment_count) {
+        case 0:
+            run_case_straight();
+            break;
+        case 1:
+            run_case_straight();
+            break;
+        case 2:
+            run_case_straight();
+        case 3:
+            operation = OFF;
+            Wheels_Straight_control();
+            state = END;
+            break;
+        default: break;
+        }
+        break;
+    case END:               //end
+        end_case();
+        if (run_time++ < 1){
+                    state = RUN; //if turning twice
+                } else {
+                    Switch_State = NONE;
+                }
+        break;
+    default: break;
+    }
+}
+
+//wait_case defines what happens when the button is pressed
+void wait_case(void) {
+    strcpy(display_line[1], "    SW    ");
+    strcpy(display_line[2], "   Wait   ");
+    if(time_change) {
+        time_change = 0;
+        if(delay_start++ >= WAITING2START) {
+            delay_start = 0;
+            state = START;
+        }
+    }
+}
+
+void start_case(void) {
+    strcpy(display_line[1], "    SW    ");
+    strcpy(display_line[2], "   START  ");
+    display_changed = TRUE;
+    cycle_time = 0;
+    right_motor_count = 0;
+    left_motor_count = 0;
+    //Forward_On();
+    segment_count = 0;
+    state = RUN;
+    operation = ON;
+}
+
+void end_case(void) {
+    //Forward_Off();
+    state = WAIT;
+    Switch_State = NONE;
+    run_time = 0;
+    segment_count = 0;
+    //Switch_State = NONE;
+    strcpy(display_line[1], "          ");
+    strcpy(display_line[2], "End       ");
+    display_changed = TRUE;
+}
+

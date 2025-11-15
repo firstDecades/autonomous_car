@@ -1,0 +1,176 @@
+/*
+ * switches.c
+ * Description: controls the switch inputs
+ *  Created on: Feb 10, 2025
+ *      Author: chait
+ */
+
+//includes
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+unsigned int okay_to_look_at_switch1 = NOT_OKAY;
+unsigned int okay_to_look_at_switch2 = NOT_OKAY;
+volatile unsigned int sw1_position = RELEASED;
+volatile unsigned int sw2_position = RELEASED;
+unsigned int count_debounce_SW1 = DEBOUNCE_RESTART;
+unsigned int count_debounce_SW2 = DEBOUNCE_RESTART;
+volatile unsigned int Shape_Count = 0;
+
+unsigned int LEFT_BLACK = 130;
+unsigned int RIGHT_BLACK = 110;
+
+//function for calling individual switch functions
+void Switches_Process(void) {
+    //calls individual switch functions, but this function will likely not be called
+    Switch1_Process();
+    Switch2_Process();
+}
+
+
+//switch1_process will define what occurs when switch 1 is pressed
+void Switch1_Process(void) {
+    //return;
+    //Switch 1 Configurations
+    //Port 4.1
+    switch(sw1_position) {
+        case PRESSED:
+            //P1OUT &= ~RED_LED;
+            //P6OUT |= GRN_LED;
+            Switch_State = SWITCH_1;
+
+    }
+
+    if (okay_to_look_at_switch1 && !sw1_position) {
+        if (!(P4IN & SW1) /*(P4IN & SW1)*/) {            //SW1 is always 1, P4IN is the input
+            sw1_position = PRESSED;
+            okay_to_look_at_switch1 = NOT_OKAY;
+            count_debounce_SW1 = DEBOUNCE_RESTART;
+            //button press event
+            // ----
+
+            Switch_State = SWITCH_1;
+            //P6OUT |=  GRN_LED;
+            //P1OUT &= ~RED_LED;
+            //strcpy(display_line[0], "   NCSU   ");
+            //strcpy(display_line[1], " SWITCH 1 ");
+            //strcpy(display_line[2], "          ");
+            //strcpy(display_line[3], "          ");
+            //display_changed = TRUE;
+
+            /*
+            //Shape_Count ++;
+                if (Shape_Count > 2) {
+                    Shape_Count = 0;
+                }
+                switch (Shape_Count) {
+                case 0:
+                    strcpy(display_line[0], " Triangle ");
+                    strcpy(display_line[1], "    Not   ");
+                    strcpy(display_line[2], "  Running ");
+                    display_changed = TRUE;
+                    break;
+                case 1:
+                    strcpy(display_line[0], " Figure 8 ");
+                    strcpy(display_line[1], "    Not   ");
+                    strcpy(display_line[2], "  Running ");
+                    display_changed = TRUE;
+                    break;
+                case 2:
+                    strcpy(display_line[0], "  Circle  ");
+                    strcpy(display_line[1], "    Not   ");
+                    strcpy(display_line[2], "  Running ");
+                    display_changed = TRUE;
+                    break;
+                    default: break;
+                }
+*/
+            //
+
+        }
+    }
+
+    if (count_debounce_SW1 <= DEBOUNCE_TIME-50) {
+        count_debounce_SW1++;
+    } else {
+        okay_to_look_at_switch1 = OKAY;
+        if (P4IN & SW1 /*!(P4IN & SW1)*/) {
+            sw1_position = RELEASED;
+        }
+    }
+}
+
+//switch2_process wil define what occurs when switch 2 is pressed
+void Switch2_Process(void) {
+    //Switch 2 Configurations
+    //Port 2.3
+    switch(sw2_position) {
+    case PRESSED:
+        sw2_position = RELEASED;
+        //P1OUT |= RED_LED;
+        //P6OUT &= ~GRN_LED;
+        Switch_State = SWITCH_2;
+
+        LEFT_BLACK = (ADC_Left_Shift) - 30;
+        RIGHT_BLACK = (ADC_Right_Shift) - 20;
+
+        /*
+        switch(IR_Status) {
+        case OFF:
+            IR_Status = ON;
+            P2OUT |= IR_LED;
+            display_line[1][9] = 'N';
+            display_changed = TRUE;
+            break;
+        case ON:
+            IR_Status = OFF;
+            P2OUT &= ~IR_LED;
+            display_line[1][9] = 'F';
+            display_changed = TRUE;
+            break;
+        default: break;
+        }
+        */
+        break;
+        default: break;
+    }
+    if (okay_to_look_at_switch2 && !sw2_position) {
+        if (!(P2IN & SW2) /*(P2IN & SW2)*/) {            //SW2 is always 1, P2IN is the input
+            sw2_position = PRESSED;
+            okay_to_look_at_switch2 = NOT_OKAY;
+            count_debounce_SW2 = DEBOUNCE_RESTART;
+            //button press event
+            // ----
+            Switch_State = SWITCH_2;
+            //P1OUT |=  RED_LED;
+            //P6OUT &= ~GRN_LED;
+            //strcpy(display_line[0], "   NCSU   ");
+            //strcpy(display_line[1], " SWITCH 2 ");
+            //strcpy(display_line[2], "          ");
+            //strcpy(display_line[3], "          ");
+            //display_changed = TRUE;
+            /*
+            strcpy(display_line[0], "          ");
+            strcpy(display_line[1], " RUNNING  ");
+            strcpy(display_line[2], "          ");
+            display_changed = TRUE;
+
+             */
+            //
+
+        }
+    }
+
+    if (count_debounce_SW2 <= DEBOUNCE_TIME-50) {
+        count_debounce_SW2++;
+    } else {
+        okay_to_look_at_switch2 = OKAY;
+        if (P2IN & SW2 /*!(P2IN & SW2)*/) {
+            sw2_position = RELEASED;
+        }
+    }
+}

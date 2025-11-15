@@ -1,0 +1,14 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+activeLaunchTarget=null\:---
+configDescList=org.eclipse.launchbar.core.descriptorType.default\:MSP430FR2355.ccxml,org.eclipse.launchbar.core.descriptorType.default\:Homework 1 a,org.eclipse.launchbar.core.descriptorType.default\:Homework 3 a,org.eclipse.launchbar.core.descriptorType.default\:Homework 6 a,org.eclipse.launchbar.core.descriptorType.default\:Homework 6 b,org.eclipse.launchbar.core.descriptorType.default\:Homework 6 c,org.eclipse.launchbar.core.descriptorType.default\:Project 3 a,org.eclipse.launchbar.core.descriptorType.default\:Project 4 a,org.eclipse.launchbar.core.descriptorType.default\:Project 4 b,org.eclipse.launchbar.core.descriptorType.default\:Project 6 a,org.eclipse.launchbar.core.descriptorType.default\:Project 6 b,org.eclipse.launchbar.core.descriptorType.default\:Project 7 F,org.eclipse.launchbar.core.descriptorType.default\:Project 7 a,org.eclipse.launchbar.core.descriptorType.default\:Project 7 b,org.eclipse.launchbar.core.descriptorType.default\:Project 7 c,org.eclipse.launchbar.core.descriptorType.default\:Project 7 d,org.eclipse.launchbar.core.descriptorType.default\:Project 7 e,org.eclipse.launchbar.core.descriptorType.default\:Project 7 g
+eclipse.preferences.version=1
+org.eclipse.launchbar.core.descriptorType.default\:Homework\ 1\ a/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Homework\ 1\ a/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:MSP430FR2355.ccxml/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:MSP430FR2355.ccxml/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:Project\ 7\ a/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Project\ 7\ b/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Project\ 7\ e/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Project\ 7\ g/activeLaunchMode=run
