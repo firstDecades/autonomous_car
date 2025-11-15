@@ -1,0 +1,395 @@
+/*
+ * wheels.c
+ * description: will hold all functions related to wheel movement
+ *  Created on: Feb 10, 2025
+ *      Author: chait
+ */
+//includes
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+//global variables
+unsigned char state = 'W';
+unsigned int right_motor_count = 0;
+unsigned int left_motor_count = 0;
+unsigned int segment_count = 0;
+unsigned int delay_start = 0;
+//const unsigned int wheel_count = 18;
+unsigned char operation;
+unsigned int wheel_period = 0;
+unsigned int run_time = 0;
+
+
+void Triangle(void) {
+    switch(state) {
+    case WAIT:              //begin
+            wait_case();
+            break;
+        case START:             //initialize
+            start_case();
+            break;
+        case RUN:               //start function
+            strcpy(display_line[1], " TRIANGLE ");
+            strcpy(display_line[2], "  running ");
+            display_changed = TRUE;
+            switch(segment_count) {
+            case 0:
+                run_case_straight();
+            case 1:
+                run_case_straight();
+                break;
+            case 2:
+                run_case_turn();
+                break;
+            case 3:
+                run_case_straight();
+                break;
+            case 4:
+                run_case_straight();
+                break;
+            case 5:
+                run_case_turn();
+                break;
+            case 6:
+                run_case_straight();
+                break;
+            case 7:
+                run_case_straight();
+                break;
+            case 8:
+                run_case_turn();
+                break;
+            case 9:
+                operation = OFF;
+                P6OUT &= ~L_FORWARD;
+                P6OUT &= ~R_FORWARD;
+                state = END;
+                break;
+            default: break;
+            }
+
+            break;
+        case END:               //end
+            if (segment_count < 9) {
+                state = RUN;
+            } else {
+                end_case();
+                if (run_time++ < 1){
+                    state = WAIT;
+                } else {
+                    Switch_State = NONE;
+                }
+            }
+            break;
+        default: break;
+    }
+}
+
+/*
+void run_triangle() {
+    if(time_change) {
+        strcpy(display_line[1], " TRIANGLE ");
+        strcpy(display_line[2], "  running ");
+        display_changed = TRUE;
+        if (segment_count <= 9) { //while segment count is less than 9 (9 cases to go through)
+                switch(segment_count) {
+                case 0:
+                    run_case_straight(); //run straight: when segment count is finally incremented in the function, it will move to next case
+                case 1:
+                    run_case_straight();
+                case 2:
+                    run_case_turn();
+                case 3:
+                    run_case_straight();
+                case 4:
+                    run_case_straight();
+                case 5:
+                    run_case_turn();
+                case 6:
+                    run_case_straight();
+                case 7:
+                    run_case_straight();
+                case 8:
+                    run_case_turn();
+                case 9:
+                    operation = OFF;
+                    P6OUT &= ~L_FORWARD;
+                    P6OUT &= ~R_FORWARD;
+                    state = END;
+                default: break;
+            }
+        }
+    }
+}
+*/
+
+//run_case_turn: turns the car to the right
+
+void run_case_turn(void) {
+    if(time_change) {
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        if (cycle_time >= 135) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        } else {
+            P6OUT |= L_FORWARD;
+            //P6OUT |= R_FORWARD;
+        }
+    }
+}
+
+void run_case_straight(void) {
+    //inside run_case_straight
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= WHEEL_COUNT_TIME) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_FORWARD;
+            P6OUT |= R_FORWARD;
+            Wheels_Straight_control();
+            //keeps operation on, run straight
+        }
+    }
+}
+
+void Wheels_Straight_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                strcpy(display_line[2], "slow again");
+                display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST) {
+                strcpy(display_line[2], " TOO FAST ");
+                display_changed = TRUE;
+                P6OUT &= ~L_FORWARD;
+            }
+            break;
+            default: break;
+    }
+}
+
+void Circle(void) {
+    switch(state) {
+    case WAIT:
+        wait_case();
+        break;
+    case START:
+        start_case();
+        break;
+    case RUN:
+        run_case_circle();
+        break;
+    case END:
+        end_case();
+        if (run_time++ < 1){
+            state = WAIT; //if turning twice
+        } else {
+            Switch_State = NONE;
+        }
+        break;
+    default: break;
+    }
+}
+
+void run_case_circle(void) {
+    //inside run_case_circle
+    if(time_change) {
+        wheel_period++;
+        //wheel_period used in Wheels_Straight_control
+
+        if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+            P6OUT &= ~R_FORWARD;
+        }
+        if (left_motor_count++ >= LEFT_COUNT_TIME) {
+            P6OUT &= ~L_FORWARD;
+        }
+        //turns off wheels when count is off
+
+        if (cycle_time >= WHEEL_COUNT_TIME) {
+            cycle_time = 0;
+            right_motor_count = 0;
+            left_motor_count = 0;
+            segment_count++;
+            //Forward_Move();
+            state = END;
+        //if the cycle time exceeds the count time for a segment, reset counts and increment segment: move to next case
+
+        } else {
+            operation = ON;
+            P6OUT |= L_FORWARD;
+            P6OUT |= R_FORWARD;
+            wheels_circle_control();
+            //keeps operation on, run straight
+        }
+    }
+}
+
+void wheels_circle_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                strcpy(display_line[2], "slow again");
+                display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST - 10) {
+                strcpy(display_line[2], " TOO FAST ");
+                display_changed = TRUE;
+                P6OUT &= ~R_FORWARD;
+            }
+            break;
+            default: break;
+    }
+}
+
+
+//run_straight: runs the car straight
+void Run_Straight(void) {
+    switch(state) {
+    case WAIT:              //begin
+        wait_case();
+        break;
+    case START:             //initialize
+        start_case();
+        break;
+    case RUN:               //start function
+        switch (segment_count) {
+        case 0:
+            run_case_straight();
+            break;
+        case 1:
+            run_case_straight();
+            break;
+        case 2:
+            run_case_straight();
+        case 3:
+            operation = OFF;
+            Wheels_Straight_control();
+            state = END;
+            break;
+        default: break;
+        }
+        break;
+    case END:               //end
+        end_case();
+        if (run_time++ < 1){
+                    state = RUN; //if turning twice
+                } else {
+                    Switch_State = NONE;
+                }
+        break;
+    default: break;
+    }
+}
+
+//wait_case defines what happens when the button is pressed
+void wait_case(void) {
+    strcpy(display_line[1], "    SW    ");
+    strcpy(display_line[2], "   Wait   ");
+    if(time_change) {
+        time_change = 0;
+        if(delay_start++ >= WAITING2START) {
+            delay_start = 0;
+            state = START;
+        }
+    }
+}
+
+void start_case(void) {
+    strcpy(display_line[1], "    SW    ");
+    strcpy(display_line[2], "   START  ");
+    display_changed = TRUE;
+    cycle_time = 0;
+    right_motor_count = 0;
+    left_motor_count = 0;
+    //Forward_On();
+    segment_count = 0;
+    state = RUN;
+    operation = ON;
+}
+
+/*void run_case_straight(void) {
+    if(time_change) {
+        wheel_period++;
+        if (segment_count <= TRAVEL_DISTANCE) {
+            if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+                P6OUT &= ~R_FORWARD;
+            }
+            if (left_motor_count++ >= LEFT_COUNT_TIME) {
+                P6OUT &= ~L_FORWARD;
+            }
+            if (cycle_time >= WHEEL_COUNT_TIME) {
+                cycle_time = 0;
+                right_motor_count = 0;
+                left_motor_count = 0;
+                segment_count++;
+                //Forward_Move();
+            } else {
+                operation = ON;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                Wheels_Straight_control();
+            }
+        } else {
+            state = END;
+            operation = OFF;
+            Wheels_Straight_control();
+        }
+    }
+}*/
+
+
+
+void end_case(void) {
+    //Forward_Off();
+    state = WAIT;
+    //Switch_State = NONE;
+    strcpy(display_line[1], "    SW    ");
+    strcpy(display_line[2], "   End    ");
+    display_changed = TRUE;
+}
+

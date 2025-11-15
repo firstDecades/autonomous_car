@@ -1,0 +1,11 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+activeLaunchTarget=null\:---
+configDescList=org.eclipse.launchbar.core.descriptorType.default\:Homework 1 a,org.eclipse.launchbar.core.descriptorType.default\:Homework 3 a,org.eclipse.launchbar.core.descriptorType.default\:Project 3 a,org.eclipse.launchbar.core.descriptorType.default\:Project 4 a,org.eclipse.launchbar.core.descriptorType.default\:Project 4 b
+eclipse.preferences.version=1
+org.eclipse.launchbar.core.descriptorType.default\:Homework\ 1\ a/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:Homework\ 1\ a/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:Project\ 3\ a/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:Project\ 4\ a/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:Project\ 4\ b/activeLaunchMode=run

@@ -1,0 +1,124 @@
+/*
+ * wheels.c
+ * description: will hold all functions related to wheel movement
+ *  Created on: Feb 10, 2025
+ *      Author: chait
+ */
+//includes
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+//global variables
+unsigned char state = 'W';
+unsigned int right_motor_count = 0;
+unsigned int left_motor_count = 0;
+unsigned int segment_count = 0;
+unsigned int delay_start = 0;
+const unsigned int wheel_count = 18;
+unsigned char operation;
+unsigned int wheel_period = 0;
+
+//run_straight: runs the car straight
+void Run_Straight(void) {
+    switch(state) {
+    case WAIT:              //begin
+        wait_case();
+        break;
+    case START:             //initialize
+        start_case();
+        break;
+    case RUN:               //start function
+        run_case_straight();
+        break;
+    case END:               //end
+        end_case();
+        break;
+    default: break;
+    }
+}
+
+//wait_case defines what happens when the button is pressed
+void wait_case(void) {
+    if(time_change) {
+        time_change = 0;
+        if(delay_start++ >= WAITING2START) {
+            delay_start = 0;
+            state = START;
+        }
+    }
+}
+
+void start_case(void) {
+    cycle_time = 0;
+    right_motor_count = 0;
+    left_motor_count = 0;
+    //Forward_On();
+    segment_count = 0;
+    state = RUN;
+    operation = ON;
+}
+
+void run_case_straight(void) {
+    if(time_change) {
+        wheel_period++;
+        if (segment_count <= TRAVEL_DISTANCE) {
+            if (right_motor_count++ >= RIGHT_COUNT_TIME) {
+                P6OUT &= ~R_FORWARD;
+            }
+            if (left_motor_count++ >= LEFT_COUNT_TIME) {
+                P6OUT &= ~L_FORWARD;
+            }
+            if (cycle_time >= WHEEL_COUNT_TIME) {
+                cycle_time = 0;
+                right_motor_count = 0;
+                left_motor_count = 0;
+                segment_count++;
+                //Forward_Move();
+            } else {
+                operation = ON;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                Wheels_Straight_control();
+            }
+        } else {
+            state = END;
+            operation = OFF;
+            Wheels_Straight_control();
+        }
+    }
+}
+
+void Wheels_Straight_control(void){
+    switch(operation) {
+        case OFF:
+            P6OUT &= ~L_FORWARD;
+            P6OUT &= ~R_FORWARD;
+            break;
+        case ON:
+            if(wheel_period >= DEFINED_PERIOD){
+                wheel_period = 0;
+                P6OUT |= L_FORWARD;
+                P6OUT |= R_FORWARD;
+                strcpy(display_line[2], "slow again");
+                display_changed = TRUE;
+            }
+            if(wheel_period >= TOO_FAST) {
+                strcpy(display_line[2], " TOO FAST ");
+                display_changed = TRUE;
+                P6OUT &= ~L_FORWARD;
+            }
+            break;
+            Default: break;
+    }
+}
+
+void end_case(void) {
+    //Forward_Off();
+    state = WAIT;
+    Switch_State = NONE;
+}
+
