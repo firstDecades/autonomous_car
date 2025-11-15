@@ -1,0 +1,68 @@
+/*
+ * interrupt_ports.c
+ *
+ *  Created on: Feb 20, 2025
+ *      Author: chait
+ */
+
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+
+unsigned int Interrupt_On = INTERRUPT_OFF;
+
+//Switches Interrupt
+//--------------------------------------------
+//Port 4 interrupt for switch 1, it is disabled for the duration of the debounce time. Debounce time is set for 1 second
+
+#pragma vector = PORT4_VECTOR
+__interrupt void switch1_interrupt(void) {
+    //Switch 1 interrupt
+    if (P4IFG & SW1) {
+        Interrupt_On = INTERRUPT_ON;
+        debounce_check = DEBOUNCE_ON;
+        debounce_switch = SWITCH_1;
+        //disable switch 1
+        P4IE &= ~SW1;
+        sw1_position = PRESSED;
+        //clear switch 1 flag
+        P4IFG &= ~SW1;
+        //clear timer B0 Interrupt Flag for Capture Compare Register 1
+        TB0CCTL1 &= ~CCIFG;
+        //Add interval to TB0R for TB0CCR1
+        TB0CCR1 += TB0CCR1_INTERVAL;
+        //Enable TimerB0_1
+        TB0CCTL1 |= CCIE; // CCR1 enable interrupt
+
+
+    }
+}
+//--------------------------------------------
+
+//--------------------------------------------
+//Port 2 interrupt for switch 2, it is disabled for the duration of the debounce time. Debounce time is set for 1 second
+#pragma vector = PORT2_VECTOR
+__interrupt void switch2_interrupt(void) {
+    //Switch 2 interrupt
+    if (P2IFG & SW2) {
+        Interrupt_On = INTERRUPT_OFF;
+        debounce_check = DEBOUNCE_ON;
+        debounce_switch = SWITCH_2;
+        //disable switch 2
+        P2IE &= ~SW2;
+        sw2_position = PRESSED;
+        //clear switch 2 flag
+        P2IFG &= ~SW2;
+        //clear timer B0 Interrupt Flag for Capture Compare Register 2
+        TB0CCTL2 &= ~CCIFG;
+        //Add interval to TB0R for TB0CCR2
+        TB0CCR2 += TB0CCR2_INTERVAL;
+        //Enable TimerB0_2
+        TB0CCTL2 |= CCIE;
+    }
+}
+
