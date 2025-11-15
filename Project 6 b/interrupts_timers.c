@@ -1,0 +1,212 @@
+/*
+ * interrupts_timers.c
+ *
+ *  Created on: Feb 20, 2025
+ *      Author: chait
+ */
+
+#include  "msp430.h"
+#include  <string.h>
+#include  "include\functions.h"
+#include  "include\LCD.h"
+#include  "include\ports.h"
+#include "include\macros.h"
+
+unsigned int blink_count = 0; //blink count for LCD display
+unsigned int lcd_display_count = 0; //count for updating backlight
+unsigned int update_lcd_count = 0; //count for updating LCD display
+volatile unsigned int Time_Sequence = 0;
+volatile char one_time = 0;
+unsigned int tens_count = 0;
+
+volatile unsigned int debounce_count = 0;
+volatile unsigned char debounce_check = DEBOUNCE_OFF;
+volatile unsigned char debounce_switch = NONE;
+unsigned char ADC_Switch = THUMB;
+
+
+volatile unsigned int twenty_ms_count = 0;
+#define TWENTY_MS_COUNT (40)
+//-------------------------------------------------------------------
+
+//TB0CCR0 interrupt vector for TB0CCR0 CCIFG
+//TB0IV interrupt vector for all other CCIFG flags and TBIFG
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer0_B0_ISR(void) {
+    //--------------------
+    //Timer B0 0 Interrupt Handler
+    //--------------------
+    //LCD Backlight
+
+    /*
+    if ((tens_count++) > 20) {
+        tens_count = 0;
+        ADCCTL0 |= ADCSC;
+    }
+    */
+    if (twenty_ms_count++ > TWENTY_MS_COUNT) {
+        twenty_ms_count = 0;
+        ADCCTL0 |= ADCSC;
+    }
+    if ((blink_count++) > FIFTY_MS_COUNT) {
+        blink_count = 0;            //reset for next count
+        //P6OUT ^= LCD_BACKLITE;      //Flip state of LCD_BACKLITE;
+        //P1OUT ^= RED_LED;
+        //P6OUT ^= GRN_LED;
+        //display_changed = TRUE;
+        //update_display = 1;
+        /*switch(ADC_Switch) {
+        case SENSOR:
+            ADCCTL0 |= ADCSC;
+            break;
+        case THUMB:
+            ADC_Channel += 1;
+            ADCCTL0 |= ADCSC;
+        default:
+            break;
+        }
+*/
+        //if (lcd_display_count == (FOUR_FIFTY_MS_COUNT - 1)) {
+            //ADCCTL0 |= ADCSC;
+        //}
+        if (lcd_display_count++ > FOUR_FIFTY_MS_COUNT) {
+            display_changed = TRUE;
+            //update_display = 1;
+            lcd_display_count = 0;
+            /*if (Interrupt_On) {
+                P6OUT ^= LCD_BACKLITE;
+            }*/
+        }
+    }
+    //update display
+    if (update_lcd_count++ > TWO_HUNDRED_MS_COUNT) {
+        update_lcd_count = 0;
+        update_display = 1;
+    }
+    //P1OUT ^= RED_LED;
+    //Time Sequence
+    one_time = 1;
+    if(Time_Sequence++ > 250) {
+        Time_Sequence = 0;
+    }
+
+    //debounce check
+    if (debounce_check == DEBOUNCE_ON) {
+        switch(debounce_switch) {
+        case SWITCH_1:
+            P4IE &= ~SW1; //disable sw1 interrupt
+            P2IE &= ~SW2; //disable sw2 interrupt during debounce
+            //P6OUT &= ~LCD_BACKLITE;
+            if (debounce_count++ > DEBOUNCE_TIME) {
+                debounce_check == DEBOUNCE_OFF;
+                debounce_switch = NONE;
+                debounce_count = 0;
+                P4IE |= SW1; //enable sw1 interrupt
+                P2IE |= SW2; //enable sw2 interrupt after debounce
+                //P6OUT |= LCD_BACKLITE;
+                sw1_position = RELEASED;
+            }
+            break;
+        case SWITCH_2:
+            P2IE &= ~SW2; //disable sw2 interrupt
+            P4IE &= ~SW1;  //disable sw1 interrupt during debounce
+            //P6OUT &= ~LCD_BACKLITE;
+            if (debounce_count++ > DEBOUNCE_TIME) {
+                debounce_count = 0;
+                debounce_check == DEBOUNCE_OFF;
+                debounce_switch = NONE;
+                P2IE |= SW2; //enable sw2 interrupt
+                P4IE |= SW1; //enable sw1 interrupt after debounce
+                //P6OUT |= LCD_BACKLITE;
+                sw2_position = RELEASED;
+                //Switch_State = NONE;
+            }
+            break;
+        case NONE:
+            break;
+        default: break;
+        }
+    }
+
+    TB0CCR0 += TB0CCR0_INTERVAL;    //Add offset to TBCCR0
+}
+
+#pragma vector = TIMER0_B1_VECTOR
+__interrupt void Timer0_B1_ISR(void) {
+    //---------------------
+    //Timer B0 1-2, Overflow Interrupt Vector (TBIV) handler
+    //---------------------
+
+    switch (__even_in_range(TB0IV, 14)) {
+    case 0: break; //No interrupt
+    case 2: //CCR1 used for SW1 Debounce
+        if (debounce_check == DEBOUNCE_OFF) {
+            debounce_check = CLEAR;
+            //Disable Timer B0 CCR1
+            TB0CCTL1 &= ~CCIE; // CCR1 enable interrupt
+
+            //Clear SW1 Interrupt Flag
+            P4IFG &= ~SW1;
+            //Enable SW1 Interrupt
+            P4IE |= SW1;
+
+            LCD_BACKLITE_DIMING = WHEEL_OFF;
+            //Shape_Count ++;
+            //Switch_State = SWITCH_1;
+        }
+        else {
+
+        }
+        TB0CCR1 += TB0CCR1_INTERVAL;    //Add offset to TBCCR1
+        break;
+    case 4:
+        //CCR2 used for SW2 Debounce
+        //Disable Timer B0 CCR2
+        if (debounce_check == DEBOUNCE_OFF) {
+            debounce_check = CLEAR;
+            TB0CCTL2 &= ~CCIE;
+            //Clear SW2 Interrupt Flag
+            P2IFG &= ~SW2;
+            //Enable SW2 Interrupt
+            P2IE |= SW2;
+
+            LCD_BACKLITE_DIMING = WHEEL_OFF;
+
+            //Switch_State = SWITCH_2;
+        }
+        TB0CCR2 += TB0CCR2_INTERVAL;    //Add offset to TBCCR2
+        break;
+    case 14:    //overflow available for greater than 1 second timer
+        TB0CTL &= ~TBIFG; // Clear Overflow Interrupt flag
+        //add code
+
+        break;
+    default: break;
+    }
+}
+
+/*
+#pragma vector = TIMER3_B0_VECTOR
+__interrupt void Timer3_B0_ISR(void) {
+    PWM_PERIOD += TB3CCR0_INTERVAL;    //Add offset to PWM_PERIOD
+
+}
+
+#pragma vector TIMER3_B1_VECTOR
+__interrupt void Timer3_B0_ISR(void) {
+    //---------------------
+        //Timer B3 1-5, Overflow Interrupt Vector (TBIV) handler
+        //---------------------
+
+        switch (__even_in_range(TB0IV, 14)) {
+        case 0: break;
+        case 2:
+            //CCR1 interrupt, Right Forward Speed
+            RIGHT_FORWARD_SPEED = WHEEL_OFF;
+            break;
+        case 4:
+            //CCR2 interrupt, Left Forward Speed
+
+        }
+}
+*/
