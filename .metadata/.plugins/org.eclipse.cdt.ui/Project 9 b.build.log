@@ -1,0 +1,52 @@
+
+**** Build of configuration Debug for project Project 9 b ****
+
+"C:\\ti\\ccs1280\\ccs\\utils\\bin\\gmake" -k -j 16 all -O 
+ 
+Building file: "../main.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1280/ccs/ccs_base/msp430/include" --include_path="C:/Users/chait/Code Composer/WORKSPACE/Project 9/Project 9 b" --include_path="C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="main.d_raw"  "../main.c"
+ 
+>> Compilation failure
+subdir_rules.mk:9: recipe for target 'main.obj' failed
+"..\include\LCD.h", line 46: warning #48-D: incompatible redefinition of macro "NULL" (declared at line 60 of "C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h")
+"../main.c", line 152: error #20: identifier "rx_check" is undefined
+"../main.c", line 154: error #20: identifier "tx_check" is undefined
+"../main.c", line 156: error #20: identifier "IOT_rx_check" is undefined
+"../main.c", line 157: warning #225-D: function "Transmit_IOT" declared implicitly
+"../main.c", line 162: error #125: default label has already appeared in this switch
+"../main.c", line 164: error #20: identifier "USB_tx_check" is undefined
+"../main.c", line 166: warning #225-D: function "Transmit_PC" declared implicitly
+"../main.c", line 305: error #66: expected a ";"
+"../main.c", line 329: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 330: error #122: a case label may only be used within a switch
+"../main.c", line 343: error #117: a break statement may only be used within a loop or switch
+"../main.c", line 344: error #122: a case label may only be used within a switch
+"../main.c", line 357: error #117: a break statement may only be used within a loop or switch
+"../main.c", line 358: error #122: a case label may only be used within a switch
+"../main.c", line 368: error #117: a break statement may only be used within a loop or switch
+"../main.c", line 369: error #123: a default label may only be used within a switch
+"../main.c", line 369: error #117: a break statement may only be used within a loop or switch
+"../main.c", line 371: error #171: expected a declaration
+"../main.c", line 442: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 443: error #171: expected a declaration
+"../main.c", line 465: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 466: error #171: expected a declaration
+"../main.c", line 468: error #171: expected a declaration
+"../main.c", line 481: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 482: error #171: expected a declaration
+"../main.c", line 506: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 509: error #171: expected a declaration
+"../main.c", line 533: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 536: error #171: expected a declaration
+At end of source: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 43: remark #1535-D: (ULP 8.1) variable "wheel_move" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 44: remark #1535-D: (ULP 8.1) variable "forward" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 62: remark #1535-D: (ULP 8.1) variable "buffer_row" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 63: remark #1535-D: (ULP 8.1) variable "buffer_row_usb" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 65: remark #1535-D: (ULP 8.1) variable "ncsuLoop" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+21 errors detected in the compilation of "../main.c".
+gmake: *** [main.obj] Error 1
+gmake: Target 'all' not remade because of errors.
+
+**** Build Finished ****

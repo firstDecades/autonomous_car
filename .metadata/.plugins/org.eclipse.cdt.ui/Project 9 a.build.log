@@ -1,0 +1,50 @@
+
+**** Build of configuration Debug for project Project 9 a ****
+
+"C:\\ti\\ccs1280\\ccs\\utils\\bin\\gmake" -k -j 16 all -O 
+ 
+Building file: "../ADC.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1280/ccs/ccs_base/msp430/include" --include_path="C:/Users/chait/Code Composer/WORKSPACE/Project 9/Project 9 a" --include_path="C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="ADC.d_raw"  "../ADC.c"
+"..\include\LCD.h", line 46: warning #48-D: incompatible redefinition of macro "NULL" (declared at line 60 of "C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h")
+Finished building: "../ADC.c"
+ 
+Building file: "../UART.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1280/ccs/ccs_base/msp430/include" --include_path="C:/Users/chait/Code Composer/WORKSPACE/Project 9/Project 9 a" --include_path="C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="UART.d_raw"  "../UART.c"
+"..\include\LCD.h", line 46: warning #48-D: incompatible redefinition of macro "NULL" (declared at line 60 of "C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h")
+"../UART.c", line 75: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+Finished building: "../UART.c"
+ 
+Building file: "../main.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1280/ccs/ccs_base/msp430/include" --include_path="C:/Users/chait/Code Composer/WORKSPACE/Project 9/Project 9 a" --include_path="C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="main.d_raw"  "../main.c"
+"..\include\LCD.h", line 46: warning #48-D: incompatible redefinition of macro "NULL" (declared at line 60 of "C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h")
+"../main.c", line 312: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 313: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 314: remark #2553-D: (ULP 14.1) Array index (involving "j") of type "int". Recommend using "unsigned int"
+"../main.c", line 314: remark #2553-D: (ULP 14.1) Array index (involving "i") of type "int". Recommend using "unsigned int"
+"../main.c", line 325: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 326: remark #2553-D: (ULP 14.1) Array index (involving "row") of type "int". Recommend using "unsigned int"
+"../main.c", line 375: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 380: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 403: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 404: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 469: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 492: remark #1544-D: (ULP 13.1) Detected loop counting up. Recommend loops count down as detecting zeros is easier
+"../main.c", line 43: remark #1535-D: (ULP 8.1) variable "wheel_move" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 44: remark #1535-D: (ULP 8.1) variable "forward" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+Finished building: "../main.c"
+ 
+Building target: "Project 9 a.out"
+Invoking: MSP430 Linker
+"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"Project 9 a.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"C:/ti/ccs1280/ccs/ccs_base/msp430/include" -i"C:/ti/ccs1280/ccs/ccs_base/msp430/lib/FR2xx" -i"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/lib" -i"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --priority --reread_libs --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Project 9 a_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "Project 9 a.out" "./ADC.obj" "./DAC.obj" "./UART.obj" "./clocks.obj" "./display.obj" "./hexToBCD.obj" "./init.obj" "./interrupt_ports.obj" "./interrupts_timers.obj" "./led.obj" "./main.obj" "./ports.obj" "./switches.obj" "./system.obj" "./timers.obj" "./unused_functions.obj" "./wheels.obj" "../Compiled/LCD.obj" "../lnk_msp430fr2355.cmd"  -lfrwp_init.a -llibc.a 
+<Linking>
+remark #10372-D: (ULP 4.1) Detected uninitialized Port A in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port B in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10372-D: (ULP 4.1) Detected uninitialized Port C in this project. Recommend initializing all unused ports to eliminate wasted current consumption on unused pins.
+remark #10422-D: (ULP 6.2) Detected use of a device with available 32-bit hardware multiplier and not also using MSPMATHLIB library (libmath.a).  Recommend using MSPMATHLIB library (libmath.a) for improved performance.
+Finished building target: "Project 9 a.out"
+ 
+
+**** Build Finished ****

@@ -1,0 +1,31 @@
+/*
+ * commands.c
+ *
+ *  Created on: Apr 13, 2025
+ *      Author: chait
+ */
+
+#define MAX_TASKS (5)
+typedef struct {
+    //unsigned char name; //name of function for wheels
+    unsigned int period; //time for event
+    unsigned int delay; //time after event
+    unsigned int ready; //binary: 1 = run now
+    unsigned int enabled; // active task
+    void (* task)(void); //address of function
+} command_task;
+
+//global list
+command_task task_list[MAX_TASKS];
+
+void Init_Task_List(void) {
+    //Initialize all tasks entries to empty state
+    int i;
+    for (i = 0; i < MAX_TASKS; i++) {
+        task_list[i].period = 0;
+        task_list[i].delay = 0;
+        task_list[i].ready = 0;
+        task_list[i].enabled = 0;
+        task_list.task = NULL;
+    }
+}

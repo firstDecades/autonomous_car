@@ -1,0 +1,38 @@
+
+**** Build of configuration Debug for project Project 9 g ****
+
+"C:\\ti\\ccs1280\\ccs\\utils\\bin\\gmake" -k -j 16 all -O 
+ 
+Building file: "../main.c"
+Invoking: MSP430 Compiler
+"C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --include_path="C:/ti/ccs1280/ccs/ccs_base/msp430/include" --include_path="C:/Users/chait/Code Composer/WORKSPACE/Project 9/Project 9 g" --include_path="C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 --preproc_with_compile --preproc_dependency="main.d_raw"  "../main.c"
+ 
+>> Compilation failure
+subdir_rules.mk:9: recipe for target 'main.obj' failed
+"..\include\LCD.h", line 46: warning #48-D: incompatible redefinition of macro "NULL" (declared at line 60 of "C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include/string.h")
+"../main.c", line 315: error #66: expected a ";"
+"../main.c", line 341: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 342: error #122: a case label may only be used within a switch
+"../main.c", line 346: error #117: a break statement may only be used within a loop or switch
+"../main.c", line 347: error #123: a default label may only be used within a switch
+"../main.c", line 347: error #117: a break statement may only be used within a loop or switch
+"../main.c", line 349: error #171: expected a declaration
+"../main.c", line 408: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 409: error #171: expected a declaration
+At end of source: warning #12-D: parsing restarts here after previous syntax error
+"../main.c", line 43: remark #1535-D: (ULP 8.1) variable "wheel_move" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 44: remark #1535-D: (ULP 8.1) variable "forward" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 62: remark #1535-D: (ULP 8.1) variable "buffer_row" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 63: remark #1535-D: (ULP 8.1) variable "buffer_row_usb" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 65: remark #1535-D: (ULP 8.1) variable "ncsuLoop" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 66: remark #1535-D: (ULP 8.1) variable "rx_check" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 67: remark #1535-D: (ULP 8.1) variable "tx_check" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 68: remark #1535-D: (ULP 8.1) variable "USB_rx_check" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 69: remark #1535-D: (ULP 8.1) variable "IOT_rx_check" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 70: remark #1535-D: (ULP 8.1) variable "IOT_toggle" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+"../main.c", line 71: remark #1535-D: (ULP 8.1) variable "USB_toggle" is used as a constant. Recommend declaring variable as either 'static const' or 'const'
+7 errors detected in the compilation of "../main.c".
+gmake: *** [main.obj] Error 1
+gmake: Target 'all' not remade because of errors.
+
+**** Build Finished ****
