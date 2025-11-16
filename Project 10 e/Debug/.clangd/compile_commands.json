@@ -1,0 +1,97 @@
+[
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/ADC.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Buffers.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/DAC.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/UART.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/clocks.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/commands.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/display.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/hexToBCD.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/init.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/interrupt_ports.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/interrupts_timers.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/led.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/main.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/ports.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/switches.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/system.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/timers.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/unused_functions.c"
+   },
+   {
+      "directory" : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/Debug",
+      "command"   : "clang++ -I\"D:/CodeComposerStudio/ccs/ccs_base/msp430/include\" -I\"D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e\" -I\"D:/CodeComposerStudio/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include\" -D__MSP430FR2355__ -D_FRWP_ENABLE -D_INFO_FRWP_ENABLE -xc",
+      "file"      : "D:/Projects/CodeComposerProjects/autonomous_car/Project 10 e/wheels.c"
+   }
+]

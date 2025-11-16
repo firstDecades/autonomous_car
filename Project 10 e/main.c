@@ -167,13 +167,21 @@ void main(void){
       P6OUT |= GRN_LED;
   }
   P6OUT &= ~GRN_LED;
+
+  ms200Time_Sequence = 0;
   while (displayIP != TRUE) {
       P6OUT |= GRN_LED;
+      if (ms200Time_Sequence >= 25) {
+        collectIP = TRUE;
+        break;
+      }
   }
   P6OUT |= GRN_LED;
-  for (i = 2; i < 12; i++) {
-      display_line[0][i-2] = ip_string[i];
-      display_line[1][i-2] = ip_string[i+10];
+  if (collectIP == FALSE) {
+      for (i = 2; i < 12; i++) {
+         display_line[0][i-2] = ip_string[i];
+         display_line[1][i-2] = ip_string[i+10];
+      }
   }
   display_changed = TRUE;
   start_ping = TRUE;
